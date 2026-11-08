@@ -5,7 +5,7 @@
 <h1 align="center">Earshot</h1>
 
 <p align="center">
-  <b>A live call copilot that lives on your Mac.</b><br>
+  <b>A free, open-source live call copilot that lives on your Mac.</b><br>
   It listens to both sides of a call, transcribes on your machine, and taps you on the shoulder only when it matters:<br>
   the question to ask, the fact you forgot, the promise to pin down.
 </p>
@@ -18,7 +18,7 @@
   <a href="#build-from-source">Build from source</a>
 </p>
 
-<p align="center"><sub>macOS 26+ · Apple silicon · bring your own model · open source (MIT)</sub></p>
+<p align="center"><sub>macOS 26+ · Apple silicon · bring your own model · free and open source (MIT)</sub></p>
 
 ![Earshot during a call: transcript in the middle, nudges and chat on the right](docs/screenshot.png)
 
