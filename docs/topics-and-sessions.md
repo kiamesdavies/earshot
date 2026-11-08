@@ -1,5 +1,7 @@
 # Topics and sessions
 
+> Looking for step-by-step setup? See **[How to use Earshot](how-to-use.md)**.
+
 Earshot has two kinds of things, and the difference between them matters:
 
 - A **session** is one call. It's a scratchpad: the transcript, the notes you type, the nudges you saw and the chat. It belongs to that call.

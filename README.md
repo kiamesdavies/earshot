@@ -15,6 +15,8 @@
   &nbsp;·&nbsp;
   <a href="https://github.com/kiamesdavies/earshot/releases">All releases</a>
   &nbsp;·&nbsp;
+  <a href="docs/how-to-use.md"><b>📖 How to use</b></a>
+  &nbsp;·&nbsp;
   <a href="#build-from-source">Build from source</a>
 </p>
 
@@ -25,7 +27,19 @@
 
 ![Earshot during a call: transcript in the middle, nudges and chat on the right](docs/screenshot.png)
 
-<sub>The demo call shipped in `fixtures/demo-call`. Every name and number in it is made up.</sub>
+## 📖 New here? Start with the guide
+
+**[How to use Earshot](docs/how-to-use.md)** walks you through everything, with screenshots:
+
+| | |
+|---|---|
+| ⚙️ **[Set up](docs/how-to-use.md#1-first-launch-and-permissions)** | Permissions, [downloading a speech model](docs/how-to-use.md#2-download-a-speech-model), [connecting your AI models](docs/how-to-use.md#3-connect-your-ai-models) (API keys, Ollama, or your `claude` / `codex` CLI) |
+| 🎙 **[Your first session](docs/how-to-use.md#4-run-your-first-session)** | Starting a call, nudges, the floating window, notes, bookmarks, chat |
+| 🧠 **[Topics](docs/how-to-use.md#5-set-up-a-topic-no-mcp-needed)** | Set one up with or without MCP, and [give it your own summary skill](docs/how-to-use.md#6-choose-how-a-topics-summaries-look-skills) |
+| 🔌 **[Link to Spacesheep, Notion or any MCP server](docs/how-to-use.md#7-link-a-topic-to-spacesheep-notion-or-any-mcp-server)** | Pull a shared page before every call, including a doc you already have |
+| 📝 **[Meeting notes that draft themselves](docs/how-to-use.md#8-draft-meeting-notes-automatically-after-a-call-post-session-hook)** | A skill drafts the record after the call, and you approve before it's published |
+| ♻️ **[Memory and compaction](docs/how-to-use.md#9-how-memory-and-compaction-work)** | How a topic remembers everything without overflowing the model |
+| 🛠 **[Troubleshooting](docs/how-to-use.md#10-troubleshooting)** | Slow sessions in iCloud, missing audio, CLIs not found |
 
 ## Why Earshot
 
@@ -74,7 +88,7 @@ Meeting tools write you a summary after the call. By then the moment has passed.
 3. Open Earshot. Go to **Settings → Permissions & audio check**, press **Request access**, then **Test audio**.
 4. **Settings → Transcription:** download a model (Whisper large-v3 turbo is the recommended one, 574 MB).
 5. **Settings → Models:** add a provider and press **Test**. The quickest start is one OpenRouter or Anthropic key with **Use one model for everything**.
-6. Create a topic, drop in a prep doc, and press **Start Session** on your next call.
+6. Create a topic, drop in a prep doc, and press **Start Session** on your next call. The **[how-to guide](docs/how-to-use.md)** covers every step in detail.
 
 Requirements: macOS 26 or later on Apple silicon. Earshot uses `SpeechAnalyzer` and Core Audio process taps, which are new in macOS 26.
 
@@ -198,7 +212,8 @@ CLIs take seconds to tens of seconds per call. They're fine for summaries and ch
 - **Text stays in the data folder** (`~/Documents/Earshot` by default, which may be in iCloud Drive): transcripts, notes, chat and nudges.
 - **Audio stays on this Mac:** `~/Library/Application Support/app.earshot.desktop/recordings/<session>/me.m4a, them.m4a`, as AAC at about 20 MB per hour per side. It never goes to the iCloud-synced folder.
 - **Keep call audio:** Settings → Storage. Choose don't keep / 7 / 14 (default) / 30 days / forever. Old audio is deleted when the app starts. Text is never deleted.
-- **Auto-stop:** a session stops by itself 2 minutes after the call app releases the mic with no further speech, after 15 minutes with no one speaking, or at 4 hours. All three are adjustable, and 0 turns a rule off.
+- **Auto-stop:** a session follows the app the call is in (Zoom, Teams, a browser tab…). It stops by itself 30 seconds after that app releases the mic if no one speaks, after 15 minutes with no one speaking, or at 4 hours. Apps that hold the mic in the background, such as helpers and dictation tools, don't keep a session alive. All three limits are adjustable in Settings → Stop automatically, and 0 turns a rule off.
+- **The "Start?" card** closes by itself once a session starts, however you started it, and when the call ends.
 
 ## Floating nudge window
 
@@ -298,7 +313,7 @@ The first-run screen reminds users that some places require everyone on a call t
 
 ## Contributing
 
-Issues and pull requests are welcome. Useful places to start:
+Issues and pull requests are welcome. In the app, **Feedback** in the sidebar opens a prefilled GitHub issue. Useful places to start:
 
 - **New connectors.** A connector is a small JSON adapter in `src/core/connectors.ts` that maps `read`, `write` and an options list onto one MCP server's tools. A declarative Notion mapping would be a great first PR.
 - **Better nudges.** Record real calls, bookmark the moments you wanted help, and use `pnpm replay` to compare prompts and models. Please share numbers with any change to the copilot.
