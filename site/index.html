@@ -1,0 +1,413 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Earshot · the live call copilot for your Mac</title>
+<meta name="description" content="Earshot listens to both sides of a call, transcribes on your Mac, and shows the question to ask, the fact you forgot or the promise to pin down. Free and open source.">
+<meta property="og:title" content="Earshot · the live call copilot for your Mac">
+<meta property="og:description" content="Nudges during the call, not a summary after it. On-device transcription, topics that learn, bring your own model. Free and open source.">
+<meta property="og:image" content="assets/app.jpg">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" type="image/png" href="assets/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #151413;
+    --bg-2: #1b1918;
+    --panel: #1f1d1b;
+    --card: #262320;
+    --line: #34302c;
+    --text: #ece7e1;
+    --muted: #a39b91;
+    --dim: #6f6860;
+    --accent: #e8833a;
+    --accent-2: #f2a265;
+    --accent-soft: rgba(232, 131, 58, 0.12);
+    --q: #6cb6ff;
+    --conn: #b083f0;
+    --fact: #57ab5a;
+    --radius: 18px;
+    --max: 1120px;
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font: 400 17px/1.6 Inter, -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+  a { color: inherit; }
+  img { max-width: 100%; height: auto; display: block; }
+  .wrap { width: min(var(--max), calc(100% - 32px)); margin: 0 auto; }
+  .serif { font-family: "Instrument Serif", Georgia, serif; font-weight: 400; letter-spacing: -0.01em; }
+  em.serif { font-style: italic; color: var(--accent-2); }
+
+  /* nav */
+  header.nav {
+    position: sticky; top: 0; z-index: 10;
+    backdrop-filter: saturate(140%) blur(14px);
+    -webkit-backdrop-filter: saturate(140%) blur(14px);
+    background: rgba(21, 20, 19, 0.72);
+    border-bottom: 1px solid rgba(52, 48, 44, 0.6);
+  }
+  .nav .wrap { display: flex; align-items: center; gap: 24px; height: 64px; }
+  .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; font-weight: 600; font-size: 18px; }
+  .brand img { width: 30px; height: 30px; border-radius: 8px; }
+  .nav nav { display: flex; gap: 22px; margin-left: auto; font-size: 15px; }
+  .nav nav a { text-decoration: none; color: var(--muted); }
+  .nav nav a:hover { color: var(--text); }
+
+  .btn {
+    display: inline-flex; align-items: center; gap: 10px;
+    padding: 13px 22px; border-radius: 999px;
+    font: 600 16px/1 Inter, system-ui, sans-serif; text-decoration: none;
+    border: 1px solid transparent; transition: transform .15s ease, background .15s ease;
+    white-space: nowrap;
+  }
+  .btn:hover { transform: translateY(-1px); }
+  .btn.primary { background: var(--accent); color: #1a120b; box-shadow: 0 8px 30px rgba(232, 131, 58, 0.28); }
+  .btn.primary:hover { background: var(--accent-2); }
+  .btn.ghost { border-color: var(--line); color: var(--text); background: rgba(255,255,255,0.02); }
+  .btn.ghost:hover { border-color: #4a443e; }
+  .btn.small { padding: 9px 16px; font-size: 14px; }
+  .btn svg { width: 18px; height: 18px; }
+
+  /* hero */
+  .hero { position: relative; padding: 88px 0 40px; text-align: center; }
+  .hero::before {
+    content: ""; position: absolute; inset: -200px 0 auto 0; height: 760px; z-index: -1;
+    background: radial-gradient(60% 50% at 50% 30%, rgba(232, 131, 58, 0.16), transparent 70%);
+  }
+  .chip {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 6px 14px; border: 1px solid var(--line); border-radius: 999px;
+    color: var(--muted); font-size: 14px; background: rgba(255,255,255,0.02);
+  }
+  .chip b { color: var(--accent-2); font-weight: 600; }
+  h1 { font-size: clamp(46px, 7.4vw, 88px); line-height: 1.02; margin: 26px auto 22px; max-width: 13ch; }
+  .lede { font-size: clamp(18px, 2.1vw, 21px); color: var(--muted); max-width: 40ch; margin: 0 auto 34px; }
+  .cta { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+  .fine { margin-top: 16px; color: var(--dim); font-size: 14px; }
+
+  /* product shot */
+  .shot { position: relative; margin: 64px auto 0; max-width: 1080px; }
+  .window {
+    border-radius: 14px; overflow: hidden; border: 1px solid var(--line);
+    background: var(--panel);
+    box-shadow: 0 50px 120px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.02);
+  }
+  .window .bar { display: flex; gap: 7px; padding: 12px 14px; border-bottom: 1px solid var(--line); background: #1a1817; }
+  .window .bar i { width: 11px; height: 11px; border-radius: 50%; background: #3a3530; }
+  .mini {
+    position: absolute; right: -36px; bottom: -40px; width: min(330px, 36%);
+    border-radius: 14px; box-shadow: 0 30px 80px rgba(0,0,0,0.6);
+    transform: rotate(-1.2deg);
+  }
+  .shot figcaption { margin-top: 64px; padding-right: 34%; color: var(--dim); font-size: 14px; text-align: center; }
+
+  /* works with */
+  .works { padding: 56px 0 16px; text-align: center; color: var(--dim); font-size: 14px; }
+  .apps { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px 26px; margin-top: 14px; color: var(--muted); font-size: 17px; font-weight: 500; }
+
+  section { padding: 96px 0; }
+  .eyebrow { color: var(--accent-2); font-size: 14px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; }
+  h2 { font-size: clamp(36px, 5vw, 58px); line-height: 1.05; margin: 12px 0 18px; }
+  .sub { color: var(--muted); font-size: 19px; max-width: 56ch; }
+  .center { text-align: center; }
+  .center .sub { margin: 0 auto; }
+
+  /* nudge cards */
+  .nudges { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 48px; }
+  .nudge {
+    background: var(--card); border: 1px solid var(--line); border-left: 3px solid var(--k);
+    border-radius: 14px; padding: 18px 18px 20px; text-align: left;
+  }
+  .nudge .k { font-size: 12px; font-weight: 600; letter-spacing: 0.08em; color: var(--k); text-transform: uppercase; }
+  .nudge p { margin: 10px 0 12px; font-size: 16px; line-height: 1.45; }
+  .nudge small { color: var(--dim); font-size: 13px; }
+
+  /* steps */
+  .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-top: 52px; }
+  .step { padding: 28px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg-2); }
+  .step .n { font-family: "Instrument Serif", serif; font-size: 44px; color: var(--accent); line-height: 1; }
+  .step h3 { margin: 14px 0 8px; font-size: 20px; }
+  .step p { margin: 0; color: var(--muted); font-size: 16px; }
+
+  /* split feature */
+  .split { display: grid; grid-template-columns: 1fr 1fr; gap: 56px; align-items: center; }
+  .split.rev { grid-template-columns: 1fr 1fr; }
+  .split.rev .text { order: 2; }
+  .split ul { list-style: none; padding: 0; margin: 26px 0 0; display: grid; gap: 14px; }
+  .split li { display: grid; grid-template-columns: 22px 1fr; gap: 12px; color: var(--muted); font-size: 16px; }
+  .split li b { color: var(--text); font-weight: 600; }
+  .split li::before { content: ""; width: 8px; height: 8px; margin-top: 9px; border-radius: 50%; background: var(--accent); }
+  .frame { max-width: 520px; justify-self: center; border-radius: 14px; overflow: hidden; border: 1px solid var(--line); box-shadow: 0 30px 80px rgba(0,0,0,0.45); }
+
+  /* grid of features */
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 52px; }
+  .card, .step { text-align: left; }
+  .card { padding: 26px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg-2); }
+  .card .ico { width: 40px; height: 40px; border-radius: 11px; display: grid; place-items: center; background: var(--accent-soft); color: var(--accent-2); }
+  .card .ico svg { width: 21px; height: 21px; }
+  .card h3 { margin: 16px 0 6px; font-size: 18px; }
+  .card p { margin: 0; color: var(--muted); font-size: 15.5px; }
+
+  /* models */
+  .models { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 34px; }
+  .models span { padding: 9px 16px; border: 1px solid var(--line); border-radius: 999px; color: var(--muted); font-size: 15px; background: var(--bg-2); }
+  .models span b { color: var(--text); font-weight: 500; }
+
+  /* privacy */
+  .privacy { background: linear-gradient(180deg, var(--bg-2), var(--bg)); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+  .facts { display: grid; grid-template-columns: repeat(4, 1fr); gap: 28px; margin-top: 48px; }
+  .facts div { border-top: 1px solid var(--line); padding-top: 18px; }
+  .facts b { display: block; font-size: 18px; margin-bottom: 6px; }
+  .facts span { color: var(--muted); font-size: 15.5px; }
+
+  /* faq */
+  .faq { max-width: 760px; margin: 44px auto 0; }
+  details { border-bottom: 1px solid var(--line); padding: 20px 0; }
+  summary { cursor: pointer; list-style: none; font-size: 18px; font-weight: 500; display: flex; justify-content: space-between; gap: 16px; }
+  summary::-webkit-details-marker { display: none; }
+  summary::after { content: "+"; color: var(--accent-2); font-size: 24px; line-height: 1; transition: transform .2s ease; }
+  details[open] summary::after { transform: rotate(45deg); }
+  details p { color: var(--muted); margin: 12px 0 0; font-size: 16px; }
+  code { background: var(--card); border: 1px solid var(--line); padding: 1px 6px; border-radius: 6px; font-size: 0.88em; }
+  details code { background: var(--card); border: 1px solid var(--line); padding: 1px 6px; border-radius: 6px; font-size: 14px; }
+
+  /* final cta */
+  .final { text-align: center; padding: 120px 0; position: relative; }
+  .final::before { content: ""; position: absolute; inset: 0; z-index: -1; background: radial-gradient(50% 60% at 50% 60%, rgba(232, 131, 58, 0.14), transparent 70%); }
+  .final h2 { max-width: 16ch; margin-left: auto; margin-right: auto; }
+
+  footer { border-top: 1px solid var(--line); padding: 36px 0 48px; color: var(--dim); font-size: 14px; }
+  footer .wrap { display: flex; flex-wrap: wrap; gap: 14px 28px; align-items: center; }
+  footer a { color: var(--muted); text-decoration: none; }
+  footer a:hover { color: var(--text); }
+  footer .ai { flex-basis: 100%; }
+
+  @media (max-width: 960px) {
+    .nudges { grid-template-columns: repeat(2, 1fr); }
+    .grid { grid-template-columns: repeat(2, 1fr); }
+    .facts { grid-template-columns: repeat(2, 1fr); }
+    .split, .split.rev { grid-template-columns: 1fr; gap: 36px; }
+    .split.rev .text { order: 0; }
+    .mini { right: 8px; bottom: -36px; }
+    .shot figcaption { padding-right: 0; margin-top: 56px; }
+  }
+  @media (max-width: 640px) {
+    body { font-size: 16px; }
+    .nav nav a:not(.btn) { display: none; }
+    .hero { padding-top: 56px; }
+    .steps, .grid, .nudges, .facts { grid-template-columns: 1fr; }
+    section { padding: 72px 0; }
+    .mini { position: relative; right: auto; bottom: auto; width: 88%; margin: -28px auto 0; transform: none; }
+    .shot figcaption { margin-top: 24px; }
+    .btn { padding: 12px 18px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="wrap">
+    <a class="brand" href="#"><img src="assets/icon.png" alt="">Earshot</a>
+    <nav>
+      <a href="#how">How it works</a>
+      <a href="#topics">Topics</a>
+      <a href="#privacy">Privacy</a>
+      <a href="https://github.com/kiamesdavies/earshot/blob/main/docs/how-to-use.md">Guide</a>
+      <a href="https://github.com/kiamesdavies/earshot">GitHub</a>
+      <a class="btn primary small" href="https://github.com/kiamesdavies/earshot/releases/latest/download/Earshot.dmg">Download</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <div class="hero">
+    <div class="wrap">
+      <span class="chip"><b>Free</b> and open source · for macOS</span>
+      <h1 class="serif">The copilot that's in on <em class="serif">every call</em></h1>
+      <p class="lede">Earshot listens to both sides of your call, on your Mac, and only speaks up when it matters: the question to ask, the fact you forgot, the promise to pin down.</p>
+      <div class="cta">
+        <a class="btn primary" href="https://github.com/kiamesdavies/earshot/releases/latest/download/Earshot.dmg">
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M16.37 12.6c-.02-2.2 1.8-3.26 1.88-3.31-1.03-1.5-2.62-1.7-3.18-1.73-1.35-.14-2.64.8-3.33.8-.68 0-1.74-.78-2.86-.76-1.47.02-2.83.86-3.59 2.17-1.53 2.65-.39 6.58 1.1 8.73.73 1.05 1.6 2.23 2.73 2.19 1.1-.04 1.51-.71 2.84-.71 1.32 0 1.7.71 2.86.69 1.18-.02 1.93-1.07 2.65-2.13.84-1.22 1.18-2.4 1.2-2.46-.03-.01-2.3-.88-2.3-3.48zM14.2 6.12c.6-.73 1.01-1.75.9-2.76-.87.03-1.92.58-2.54 1.31-.56.65-1.05 1.68-.92 2.68.97.08 1.96-.49 2.56-1.23z"/></svg>
+          Download for Mac
+        </a>
+        <a class="btn ghost" href="https://github.com/kiamesdavies/earshot">
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.52-1.33-1.28-1.69-1.28-1.69-1.05-.71.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.56-.29-5.25-1.28-5.25-5.68 0-1.26.45-2.28 1.19-3.09-.12-.29-.52-1.46.11-3.04 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.58.23 2.75.11 3.04.74.81 1.19 1.83 1.19 3.09 0 4.41-2.7 5.38-5.27 5.67.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .5z"/></svg>
+          Star on GitHub
+        </a>
+      </div>
+      <p class="fine">macOS 26 or later · Apple silicon · no bot joins your call</p>
+
+      <figure class="shot">
+        <div class="window">
+          <div class="bar"><i></i><i></i><i></i></div>
+          <img src="assets/app.jpg" alt="Earshot during a call: the transcript in the middle, nudges with their source files and a chat on the right" width="1800" height="1125">
+        </div>
+        <img class="mini" src="assets/mini.png" alt="The floating nudge window, showing one nudge: confirm the three-site quote before the budget review" width="1140" height="588">
+        <figcaption>The floating window stays on top of Zoom, Meet or Teams and shows one nudge at a time.</figcaption>
+      </figure>
+    </div>
+  </div>
+
+  <div class="works">
+    <div class="wrap">
+      Works with any call on your Mac, with no bot and no invite
+      <div class="apps"><span>Zoom</span><span>Google Meet</span><span>Microsoft Teams</span><span>Slack</span><span>FaceTime</span><span>WhatsApp</span><span>Discord</span></div>
+    </div>
+  </div>
+
+  <section>
+    <div class="wrap center">
+      <span class="eyebrow">During the call, not after it</span>
+      <h2 class="serif">Help at the moment you need it</h2>
+      <p class="sub">Meeting tools hand you a summary when it's too late to act on it. Earshot waits until the other person finishes speaking, decides whether anything is worth saying, and usually stays quiet. When it speaks, it's one short card, with the file it came from.</p>
+      <div class="nudges">
+        <div class="nudge" style="--k: var(--q)"><span class="k">Ask</span><p>Who else signs off after you: procurement, or the CFO directly?</p><small>Your goal: get a decision timeline</small></div>
+        <div class="nudge" style="--k: var(--conn)"><span class="k">Connection</span><p>The Dallas sync failures were ticket ACM-118, fixed on 2 Sep. Worth saying it's stable now.</p><small>topics/acme-pilot/prep.md</small></div>
+        <div class="nudge" style="--k: var(--fact)"><span class="k">Fact</span><p>The agreed bar was 98.5% pick accuracy. Reno hit ~98%, Dallas ~97%.</p><small>From your notes, 4 Aug</small></div>
+        <div class="nudge" style="--k: var(--accent)"><span class="k">Pin down</span><p>Confirm: the three-site quote by end of next week, before the 14 Sep budget review?</p><small>They just asked for it</small></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="how" style="padding-top: 24px">
+    <div class="wrap center">
+      <span class="eyebrow">How it works</span>
+      <h2 class="serif">Join the call. Earshot does the rest.</h2>
+      <div class="steps">
+        <div class="step"><div class="n">1</div><h3>It notices the call</h3><p>When Zoom, Meet or Teams starts using your mic, a small card offers to start. One click, and it hears both sides: you through the mic, them through system audio.</p></div>
+        <div class="step"><div class="n">2</div><h3>It helps while you talk</h3><p>Speech is transcribed on your Mac. The copilot searches your notes for this person or project and nudges you only when it's worth it. ⌘B marks a moment you wanted help.</p></div>
+        <div class="step"><div class="n">3</div><h3>It writes it up and remembers</h3><p>When the call ends, Earshot writes notes in your format, files them in the topic and updates what it knows. The next call starts where this one left off.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="topics">
+    <div class="wrap split">
+      <div class="text">
+        <span class="eyebrow">Topics that learn</span>
+        <h2 class="serif">A memory for every deal, person and project</h2>
+        <p class="sub">A session is one call, your scratchpad. A topic is what the calls are about, and it gets smarter with each one.</p>
+        <ul>
+          <li><span><b>One living memory.</b> After every call, <code>memory.md</code> is rewritten with what's still true: people, numbers, decisions, open loops and what changed.</span></li>
+          <li><span><b>It learns how your calls go.</b> Every moment you bookmark becomes a lesson for the next call.</span></li>
+          <li><span><b>It never overflows.</b> The model reads the memory and the last three calls, so a topic with 300 calls costs about the same as one with 3.</span></li>
+          <li><span><b>Plain markdown, on your Mac.</b> Edit it, put it in Obsidian or git, or point an AI agent at it.</span></li>
+        </ul>
+      </div>
+      <div class="frame"><img src="assets/memory.jpg" alt="A topic's memory.md: people, facts and numbers, decisions and open loops built from two calls" width="846" height="967" loading="lazy"></div>
+    </div>
+  </section>
+
+  <section style="padding-top: 24px">
+    <div class="wrap split rev">
+      <div class="text">
+        <span class="eyebrow">Notes your way</span>
+        <h2 class="serif">Bring a skill, get the notes you actually use</h2>
+        <p class="sub">A sales call, a weekly team meeting and a one-to-one need different notes. Give each topic its own format: a skill file you already use with Claude Code or another agent, or a few headings you type in.</p>
+        <ul>
+          <li><span><b>Meeting records that draft themselves.</b> Link a topic to Spacesheep, Notion or any MCP server. After the call, a skill drafts this week's record.</span></li>
+          <li><span><b>Nothing is published without you.</b> The draft waits for your review. Edit it, then press Publish.</span></li>
+          <li><span><b>Your team and their agents stay in sync.</b> The record lands where people and AI agents already read, with versions.</span></li>
+        </ul>
+      </div>
+      <div class="frame"><img src="assets/draft.jpg" alt="A drafted meeting record waiting for review, with Publish, Edit and Discard buttons" width="752" height="750" loading="lazy"></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap center">
+      <span class="eyebrow">Bring your own model</span>
+      <h2 class="serif">Your models. Your keys. Your bill.</h2>
+      <p class="sub">Use a cloud model you already pay for, a local one that never leaves your Mac, or the AI tools you already have installed. Give each job its own model: a fast one for nudges, a strong one for notes.</p>
+      <div class="models">
+        <span><b>Anthropic</b> API</span><span><b>OpenAI</b></span><span><b>OpenRouter</b></span><span><b>Ollama</b> (local)</span><span><b>LM Studio</b> (local)</span><span>Any <b>OpenAI-compatible</b> server</span><span><b>Claude Code</b> CLI</span><span><b>Codex</b> CLI</span><span><b>Kiro</b> CLI</span>
+      </div>
+    </div>
+  </section>
+
+  <section style="padding-top: 24px">
+    <div class="wrap center">
+      <span class="eyebrow">Everything else</span>
+      <h2 class="serif">Small touches, all included</h2>
+      <div class="grid">
+        <div class="card"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v3"/></svg></div><h3>Both sides, labelled</h3><p>Your mic is "You", system audio is "Them". Echo cancellation keeps your speakers from being transcribed twice.</p></div>
+        <div class="card"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="14" rx="2"/><path d="M8 21h8M12 18v3"/></svg></div><h3>On-device transcription</h3><p>Whisper and Parakeet, downloaded in the app. Add your jargon and names as vocabulary.</p></div>
+        <div class="card"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M14 3v7h7"/></svg></div><h3>Floating window</h3><p>One nudge at a time over your call app. Step through with ← →, or open it anywhere with ⌃⌥N.</p></div>
+        <div class="card"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div><h3>Chat that does things</h3><p>"Save the decisions to the topic", "append to prep.md that…". It reads and edits your notes, and never deletes.</p></div>
+        <div class="card"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></div><h3>Starts and stops itself</h3><p>Offers to start when a call begins, and stops 30 seconds after the call app hangs up.</p></div>
+        <div class="card"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/></svg></div><h3>Measurable</h3><p>Replay any call through any model and get precision, recall and latency for its nudges.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="privacy" class="privacy">
+    <div class="wrap">
+      <span class="eyebrow">Private by design</span>
+      <h2 class="serif">Your calls stay on your Mac</h2>
+      <p class="sub">There is no Earshot server. There's no account to create, and nothing to sign up for.</p>
+      <div class="facts">
+        <div><b>Audio never leaves</b><span>Recorded and transcribed on your Mac, and deleted after 14 days unless you choose otherwise.</span></div>
+        <div><b>Files you own</b><span>Transcripts, notes and memory are plain markdown in a folder you choose.</span></div>
+        <div><b>Only what you send</b><span>Text goes only to the model you picked. With Ollama or LM Studio, nothing leaves at all.</span></div>
+        <div><b>Keys in the keychain</b><span>API keys and connector sign-ins are kept in the macOS keychain. Logs never contain what was said.</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="faq">
+    <div class="wrap">
+      <div class="center">
+        <span class="eyebrow">Questions</span>
+        <h2 class="serif">Good to know</h2>
+      </div>
+      <div class="faq">
+        <details><summary>Is it really free?</summary><p>Yes. Earshot is open source under the MIT licence. You pay your model provider directly if you use a cloud model, or nothing at all with a local one through Ollama or LM Studio.</p></details>
+        <details><summary>Does a bot join my meetings?</summary><p>No. Earshot runs on your Mac and hears the call the way you do, through your mic and your system audio. Nobody else on the call sees anything join. Some places require everyone on a call to agree to recording, so ask first.</p></details>
+        <details><summary>Which Macs does it run on?</summary><p>Apple silicon Macs with macOS 26 or later. It uses Apple's newest speech and audio APIs, which arrived in macOS 26.</p></details>
+        <details><summary>macOS says it can't open Earshot. What do I do?</summary><p>The app isn't notarised by Apple yet. After dragging it into Applications, open System Settings → Privacy &amp; Security and click <b>Open Anyway</b>, or run <code>xattr -dr com.apple.quarantine /Applications/Earshot.app</code> once.</p></details>
+        <details><summary>Can I use my Claude or ChatGPT subscription?</summary><p>Earshot can run the <code>claude</code>, <code>codex</code> and <code>kiro-cli</code> tools you already have installed, with your own login. Check each provider's terms before using a subscription this way. API keys and local models are always fine.</p></details>
+        <details><summary>How is this different from other meeting notetakers?</summary><p>Most notetakers focus on the write-up. Earshot's focus is helping during the call, with nudges drawn from your own notes. It's also fully local and open source, uses the models you choose, and keeps everything as markdown you own.</p></details>
+        <details><summary>Who built it?</summary><p>Earshot is a community project on GitHub. Its code and docs were written with AI and have not been reviewed by a human, so read the code before you trust it with your calls. Bug reports and pull requests are welcome.</p></details>
+      </div>
+    </div>
+  </section>
+
+  <div class="final">
+    <div class="wrap">
+      <h2 class="serif">Walk into your next call <em class="serif">prepared</em></h2>
+      <p class="sub" style="margin: 0 auto 34px">Free, open source, and ready in a few minutes.</p>
+      <div class="cta">
+        <a class="btn primary" href="https://github.com/kiamesdavies/earshot/releases/latest/download/Earshot.dmg">Download for Mac</a>
+        <a class="btn ghost" href="https://github.com/kiamesdavies/earshot/blob/main/docs/how-to-use.md">Read the guide</a>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <a class="brand" href="#"><img src="assets/icon.png" alt="" style="width:22px;height:22px;border-radius:6px">Earshot</a>
+    <a href="https://github.com/kiamesdavies/earshot">GitHub</a>
+    <a href="https://github.com/kiamesdavies/earshot/blob/main/docs/how-to-use.md">How to use</a>
+    <a href="https://github.com/kiamesdavies/earshot/blob/main/docs/topics-and-sessions.md">Topics and sessions</a>
+    <a href="https://github.com/kiamesdavies/earshot/releases">Releases</a>
+    <a href="https://github.com/kiamesdavies/earshot/issues/new">Report an issue</a>
+    <span>MIT licence</span>
+    <span class="ai">AI-generated. Earshot's code and docs were written with AI and have not been reviewed by a human.</span>
+  </div>
+</footer>
+
+</body>
+</html>

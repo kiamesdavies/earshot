@@ -13,6 +13,8 @@
 <p align="center">
   <a href="https://github.com/kiamesdavies/earshot/releases/latest/download/Earshot.dmg"><b>⬇ Download Earshot for macOS (.dmg)</b></a>
   &nbsp;·&nbsp;
+  <a href="https://kiamesdavies.github.io/earshot/">Website</a>
+  &nbsp;·&nbsp;
   <a href="https://github.com/kiamesdavies/earshot/releases">All releases</a>
   &nbsp;·&nbsp;
   <a href="docs/how-to-use.md"><b>📖 How to use</b></a>
