@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Earshot · the live call copilot for your Mac</title>
-<meta name="description" content="Earshot listens to both sides of a call, transcribes on your Mac, and shows the question to ask, the fact you forgot or the promise to pin down. Free and open source.">
-<meta property="og:title" content="Earshot · the live call copilot for your Mac">
-<meta property="og:description" content="Nudges during the call, not a summary after it. On-device transcription, topics that learn, bring your own model. Free and open source.">
+<title>Earshot · what to say next, while you're still on the call</title>
+<meta name="description" content="Earshot is a free Mac app that listens to your calls and, using your own notes, shows what to say next: a question to ask, a number you forgot, a promise to confirm.">
+<meta property="og:title" content="Earshot · what to say next, while you're still on the call">
+<meta property="og:description" content="A free Mac app that listens to your calls and shows what to say next, from your own notes. Open source, private, any AI model.">
 <meta property="og:image" content="assets/app.jpg">
 <meta property="og:type" content="website">
 <meta name="twitter:card" content="summary_large_image">
@@ -92,8 +92,9 @@
     color: var(--muted); font-size: 14px; background: rgba(255,255,255,0.02);
   }
   .chip b { color: var(--accent-2); font-weight: 600; }
-  h1 { font-size: clamp(46px, 7.4vw, 88px); line-height: 1.02; margin: 26px auto 22px; max-width: 13ch; }
-  .lede { font-size: clamp(18px, 2.1vw, 21px); color: var(--muted); max-width: 40ch; margin: 0 auto 34px; }
+  h1 { font-size: clamp(44px, 6.6vw, 80px); line-height: 1.04; margin: 26px auto 22px; max-width: 17ch; text-wrap: balance; }
+  h2 { text-wrap: balance; }
+  .lede { font-size: clamp(18px, 2.1vw, 21px); color: var(--muted); max-width: 46ch; text-wrap: pretty; margin: 0 auto 34px; }
   .cta { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
   .fine { margin-top: 16px; color: var(--dim); font-size: 14px; }
 
@@ -149,7 +150,7 @@
   .split li { display: grid; grid-template-columns: 22px 1fr; gap: 12px; color: var(--muted); font-size: 16px; }
   .split li b { color: var(--text); font-weight: 600; }
   .split li::before { content: ""; width: 8px; height: 8px; margin-top: 9px; border-radius: 50%; background: var(--accent); }
-  .frame { max-width: 520px; justify-self: center; border-radius: 14px; overflow: hidden; border: 1px solid var(--line); box-shadow: 0 30px 80px rgba(0,0,0,0.45); }
+  .frame { background: var(--panel); max-width: 520px; justify-self: center; border-radius: 14px; overflow: hidden; border: 1px solid var(--line); box-shadow: 0 30px 80px rgba(0,0,0,0.45); }
 
   /* grid of features */
   .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 52px; }
@@ -235,8 +236,8 @@
   <div class="hero">
     <div class="wrap">
       <span class="chip"><b>Free</b> and open source · for macOS</span>
-      <h1 class="serif">The copilot that's in on <em class="serif">every call</em></h1>
-      <p class="lede">Earshot listens to both sides of your call, on your Mac, and only speaks up when it matters: the question to ask, the fact you forgot, the promise to pin down.</p>
+      <h1 class="serif">Know what to say next, <em class="serif">while you're still on the call</em></h1>
+      <p class="lede">Earshot is a free Mac app that listens to your Zoom, Meet or Teams calls. When there's something worth saying, it shows a short nudge from your own notes: a question to ask, a number you forgot, a promise to confirm.</p>
       <div class="cta">
         <a class="btn primary" href="https://github.com/kiamesdavies/earshot/releases/latest/download/Earshot.dmg">
           <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M16.37 12.6c-.02-2.2 1.8-3.26 1.88-3.31-1.03-1.5-2.62-1.7-3.18-1.73-1.35-.14-2.64.8-3.33.8-.68 0-1.74-.78-2.86-.76-1.47.02-2.83.86-3.59 2.17-1.53 2.65-.39 6.58 1.1 8.73.73 1.05 1.6 2.23 2.73 2.19 1.1-.04 1.51-.71 2.84-.71 1.32 0 1.7.71 2.86.69 1.18-.02 1.93-1.07 2.65-2.13.84-1.22 1.18-2.4 1.2-2.46-.03-.01-2.3-.88-2.3-3.48zM14.2 6.12c.6-.73 1.01-1.75.9-2.76-.87.03-1.92.58-2.54 1.31-.56.65-1.05 1.68-.92 2.68.97.08 1.96-.49 2.56-1.23z"/></svg>
@@ -255,7 +256,7 @@
           <img src="assets/app.jpg" alt="Earshot during a call: the transcript in the middle, nudges with their source files and a chat on the right" width="1800" height="1125">
         </div>
         <img class="mini" src="assets/mini.png" alt="The floating nudge window, showing one nudge: confirm the three-site quote before the budget review" width="1140" height="588">
-        <figcaption>The floating window stays on top of Zoom, Meet or Teams and shows one nudge at a time.</figcaption>
+        <figcaption>During the call, a small window sits on top of Zoom, Meet or Teams and shows one nudge at a time.</figcaption>
       </figure>
     </div>
   </div>
@@ -270,11 +271,11 @@
   <section>
     <div class="wrap center">
       <span class="eyebrow">During the call, not after it</span>
-      <h2 class="serif">Help at the moment you need it</h2>
-      <p class="sub">Meeting tools hand you a summary when it's too late to act on it. Earshot waits until the other person finishes speaking, decides whether anything is worth saying, and usually stays quiet. When it speaks, it's one short card, with the file it came from.</p>
+      <h2 class="serif">One nudge, only when it's worth it</h2>
+      <p class="sub">Most meeting tools give you a summary after the call, when it's too late to use. Earshot waits for the other person to finish speaking and stays quiet unless something is worth saying. Each nudge shows the note it came from.</p>
       <div class="nudges">
         <div class="nudge" style="--k: var(--q)"><span class="k">Ask</span><p>Who else signs off after you: procurement, or the CFO directly?</p><small>Your goal: get a decision timeline</small></div>
-        <div class="nudge" style="--k: var(--conn)"><span class="k">Connection</span><p>The Dallas sync failures were ticket ACM-118, fixed on 2 Sep. Worth saying it's stable now.</p><small>topics/acme-pilot/prep.md</small></div>
+        <div class="nudge" style="--k: var(--conn)"><span class="k">From your notes</span><p>The Dallas sync failures were ticket ACM-118, fixed on 2 Sep. Worth saying it's stable now.</p><small>topics/acme-pilot/prep.md</small></div>
         <div class="nudge" style="--k: var(--fact)"><span class="k">Fact</span><p>The agreed bar was 98.5% pick accuracy. Reno hit ~98%, Dallas ~97%.</p><small>From your notes, 4 Aug</small></div>
         <div class="nudge" style="--k: var(--accent)"><span class="k">Pin down</span><p>Confirm: the three-site quote by end of next week, before the 14 Sep budget review?</p><small>They just asked for it</small></div>
       </div>
@@ -284,11 +285,11 @@
   <section id="how" style="padding-top: 24px">
     <div class="wrap center">
       <span class="eyebrow">How it works</span>
-      <h2 class="serif">Join the call. Earshot does the rest.</h2>
+      <h2 class="serif">It starts with your call and stops when it ends</h2>
       <div class="steps">
-        <div class="step"><div class="n">1</div><h3>It notices the call</h3><p>When Zoom, Meet or Teams starts using your mic, a small card offers to start. One click, and it hears both sides: you through the mic, them through system audio.</p></div>
-        <div class="step"><div class="n">2</div><h3>It helps while you talk</h3><p>Speech is transcribed on your Mac. The copilot searches your notes for this person or project and nudges you only when it's worth it. ⌘B marks a moment you wanted help.</p></div>
-        <div class="step"><div class="n">3</div><h3>It writes it up and remembers</h3><p>When the call ends, Earshot writes notes in your format, files them in the topic and updates what it knows. The next call starts where this one left off.</p></div>
+        <div class="step"><div class="n">1</div><h3>It notices the call</h3><p>When Zoom, Meet or Teams turns on your mic, Earshot asks if it should start. One click, and it hears both sides: you through the mic, them through your Mac's sound.</p></div>
+        <div class="step"><div class="n">2</div><h3>It helps while you talk</h3><p>Speech becomes text on your Mac. Earshot checks your notes on this person or project and nudges you when it helps. Press ⌘B when you wish you'd had help.</p></div>
+        <div class="step"><div class="n">3</div><h3>It writes the notes and remembers</h3><p>When the call ends, Earshot writes the notes in your format. It saves what it learned, so the next call starts where this one left off.</p></div>
       </div>
     </div>
   </section>
@@ -298,15 +299,15 @@
       <div class="text">
         <span class="eyebrow">Topics that learn</span>
         <h2 class="serif">A memory for every deal, person and project</h2>
-        <p class="sub">A session is one call, your scratchpad. A topic is what the calls are about, and it gets smarter with each one.</p>
+        <p class="sub">Each deal, person or project gets a folder of notes, called a topic. Every call on it makes it smarter.</p>
         <ul>
-          <li><span><b>One living memory.</b> After every call, <code>memory.md</code> is rewritten with what's still true: people, numbers, decisions, open loops and what changed.</span></li>
-          <li><span><b>It learns how your calls go.</b> Every moment you bookmark becomes a lesson for the next call.</span></li>
-          <li><span><b>It never overflows.</b> The model reads the memory and the last three calls, so a topic with 300 calls costs about the same as one with 3.</span></li>
-          <li><span><b>Plain markdown, on your Mac.</b> Edit it, put it in Obsidian or git, or point an AI agent at it.</span></li>
+          <li><span><b>One page of what's true now.</b> After every call, Earshot rewrites the topic's memory: people, numbers, decisions, open to-dos and what changed.</span></li>
+          <li><span><b>It learns what you needed.</b> Every time you press ⌘B, the memory notes what to have ready next time.</span></li>
+          <li><span><b>It stays small.</b> Before a call, the AI reads the memory and the last three calls, not every call ever. A topic with 300 calls costs about the same as one with 3.</span></li>
+          <li><span><b>Plain text files on your Mac.</b> Edit them, open them in Obsidian, or point an AI agent at them.</span></li>
         </ul>
       </div>
-      <div class="frame"><img src="assets/memory.jpg" alt="A topic's memory.md: people, facts and numbers, decisions and open loops built from two calls" width="846" height="967" loading="lazy"></div>
+      <div class="frame"><img src="assets/memory.jpg" alt="A topic's memory.md: people, facts and numbers, decisions and open loops built from two calls" width="846" height="967"></div>
     </div>
   </section>
 
@@ -314,23 +315,23 @@
     <div class="wrap split rev">
       <div class="text">
         <span class="eyebrow">Notes your way</span>
-        <h2 class="serif">Bring a skill, get the notes you actually use</h2>
-        <p class="sub">A sales call, a weekly team meeting and a one-to-one need different notes. Give each topic its own format: a skill file you already use with Claude Code or another agent, or a few headings you type in.</p>
+        <h2 class="serif">Notes in the format each meeting needs</h2>
+        <p class="sub">A sales call, a weekly team meeting and a one-to-one need different notes. Type the headings you want, or reuse a skill: the instruction file you already give Claude Code or another AI agent.</p>
         <ul>
-          <li><span><b>Meeting records that draft themselves.</b> Link a topic to Spacesheep, Notion or any MCP server. After the call, a skill drafts this week's record.</span></li>
-          <li><span><b>Nothing is published without you.</b> The draft waits for your review. Edit it, then press Publish.</span></li>
-          <li><span><b>Your team and their agents stay in sync.</b> The record lands where people and AI agents already read, with versions.</span></li>
+          <li><span><b>Shared meeting notes, drafted for you.</b> Connect a topic to a page in Spacesheep, Notion or another tool. After the call, Earshot drafts this week's entry for that page.</span></li>
+          <li><span><b>Nothing goes out without you.</b> The draft waits for you to read it. Edit it, then press Publish.</span></li>
+          <li><span><b>Your team sees it where they already work.</b> The notes land on the shared page, with every version kept, where people and their AI agents can read them.</span></li>
         </ul>
       </div>
-      <div class="frame"><img src="assets/draft.jpg" alt="A drafted meeting record waiting for review, with Publish, Edit and Discard buttons" width="752" height="750" loading="lazy"></div>
+      <div class="frame"><img src="assets/draft.jpg" alt="A drafted meeting record waiting for review, with Publish, Edit and Discard buttons" width="752" height="750"></div>
     </div>
   </section>
 
   <section>
     <div class="wrap center">
       <span class="eyebrow">Bring your own model</span>
-      <h2 class="serif">Your models. Your keys. Your bill.</h2>
-      <p class="sub">Use a cloud model you already pay for, a local one that never leaves your Mac, or the AI tools you already have installed. Give each job its own model: a fast one for nudges, a strong one for notes.</p>
+      <h2 class="serif">Use the AI you already pay for, or a free one on your Mac</h2>
+      <p class="sub">Add a key from Anthropic, OpenAI or OpenRouter, run a free model on your Mac, or use AI tools you already have installed. You can use a fast model for nudges and a stronger one for notes.</p>
       <div class="models">
         <span><b>Anthropic</b> API</span><span><b>OpenAI</b></span><span><b>OpenRouter</b></span><span><b>Ollama</b> (local)</span><span><b>LM Studio</b> (local)</span><span>Any <b>OpenAI-compatible</b> server</span><span><b>Claude Code</b> CLI</span><span><b>Codex</b> CLI</span><span><b>Kiro</b> CLI</span>
       </div>
@@ -340,14 +341,14 @@
   <section style="padding-top: 24px">
     <div class="wrap center">
       <span class="eyebrow">Everything else</span>
-      <h2 class="serif">Small touches, all included</h2>
+      <h2 class="serif">Also included</h2>
       <div class="grid">
-        <div class="card"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v3"/></svg></div><h3>Both sides, labelled</h3><p>Your mic is "You", system audio is "Them". Echo cancellation keeps your speakers from being transcribed twice.</p></div>
-        <div class="card"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="14" rx="2"/><path d="M8 21h8M12 18v3"/></svg></div><h3>On-device transcription</h3><p>Whisper and Parakeet, downloaded in the app. Add your jargon and names as vocabulary.</p></div>
+        <div class="card"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v3"/></svg></div><h3>Both sides, labelled</h3><p>Your words show as "You", theirs as "Them". If you're on speakers, their voice isn't picked up twice.</p></div>
+        <div class="card"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="14" rx="2"/><path d="M8 21h8M12 18v3"/></svg></div><h3>Speech to text on your Mac</h3><p>Download Whisper or Parakeet in the app. Add names and jargon so it spells them right.</p></div>
         <div class="card"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M14 3v7h7"/></svg></div><h3>Floating window</h3><p>One nudge at a time over your call app. Step through with ← →, or open it anywhere with ⌃⌥N.</p></div>
-        <div class="card"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div><h3>Chat that does things</h3><p>"Save the decisions to the topic", "append to prep.md that…". It reads and edits your notes, and never deletes.</p></div>
-        <div class="card"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></div><h3>Starts and stops itself</h3><p>Offers to start when a call begins, and stops 30 seconds after the call app hangs up.</p></div>
-        <div class="card"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/></svg></div><h3>Measurable</h3><p>Replay any call through any model and get precision, recall and latency for its nudges.</p></div>
+        <div class="card"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div><h3>A chat that edits your notes</h3><p>Type "save the decisions to this topic" or "add that Dana prefers email". It can add and change notes, never delete them.</p></div>
+        <div class="card"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></div><h3>Starts and stops by itself</h3><p>Offers to start when a call begins, and stops 30 seconds after the call app hangs up.</p></div>
+        <div class="card"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/></svg></div><h3>Test which AI helps most</h3><p>Replay a past call through different models and see which nudges arrived on time and were useful.</p></div>
       </div>
     </div>
   </section>
@@ -386,8 +387,8 @@
 
   <div class="final">
     <div class="wrap">
-      <h2 class="serif">Walk into your next call <em class="serif">prepared</em></h2>
-      <p class="sub" style="margin: 0 auto 34px">Free, open source, and ready in a few minutes.</p>
+      <h2 class="serif">Try it on <em class="serif">your next call</em></h2>
+      <p class="sub" style="margin: 0 auto 34px">Free and open source. Setup takes about five minutes.</p>
       <div class="cta">
         <a class="btn primary" href="https://github.com/kiamesdavies/earshot/releases/latest/download/Earshot.dmg">Download for Mac</a>
         <a class="btn ghost" href="https://github.com/kiamesdavies/earshot/blob/main/docs/how-to-use.md">Read the guide</a>
