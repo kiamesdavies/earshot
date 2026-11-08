@@ -18,7 +18,7 @@ A step-by-step guide, from first launch to meeting notes that write themselves. 
 
 ## 1. First launch and permissions
 
-1. [Download the DMG](https://github.com/kiamesdavies/earshot/releases/latest/download/Earshot_0.1.0_aarch64.dmg), open it and drag **Earshot** into **Applications**.
+1. [Download the DMG](https://github.com/kiamesdavies/earshot/releases/latest/download/Earshot.dmg), open it and drag **Earshot** into **Applications**.
 2. The first time, macOS blocks it because the build isn't notarised. Open **System Settings → Privacy & Security**, scroll down and click **Open Anyway**. Or run this once:
 
    ```bash

@@ -131,7 +131,7 @@ export function installMock() {
         case "system_info":
           return "macOS 26.1 (aarch64)";
         case "plugin:app|version":
-          return "0.1.0";
+          return "0.2.0";
         case "sessions_dirs":
           return [...new Set([...files.keys()].filter((k) => k.startsWith("sessions/") && k.endsWith("/session.json")))]
             .map((k) => ({ dir: k.replace("/session.json", ""), offlineFiles: 0 }))

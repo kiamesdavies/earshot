@@ -11,7 +11,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/kiamesdavies/earshot/releases/latest/download/Earshot_0.1.0_aarch64.dmg"><b>⬇ Download Earshot for macOS (.dmg)</b></a>
+  <a href="https://github.com/kiamesdavies/earshot/releases/latest/download/Earshot.dmg"><b>⬇ Download Earshot for macOS (.dmg)</b></a>
   &nbsp;·&nbsp;
   <a href="https://github.com/kiamesdavies/earshot/releases">All releases</a>
   &nbsp;·&nbsp;
@@ -23,7 +23,7 @@
 <p align="center"><sub>macOS 26+ · Apple silicon · bring your own model · free and open source (MIT)</sub></p>
 
 > [!WARNING]
-> **AI-generated.** Earshot's code and docs were written with AI and have not been reviewed by a human. Read the code before you trust it with your calls, and please report anything that looks wrong.
+> **AI-generated.** Earshot's code and docs were written with AI and have not been reviewed by a human.
 
 ![Earshot during a call: transcript in the middle, nudges and chat on the right](docs/screenshot.png)
 
@@ -78,7 +78,7 @@ Meeting tools write you a summary after the call. By then the moment has passed.
 
 ## Install
 
-1. [Download the DMG](https://github.com/kiamesdavies/earshot/releases/latest/download/Earshot_0.1.0_aarch64.dmg) and drag **Earshot** into **Applications**.
+1. [Download the DMG](https://github.com/kiamesdavies/earshot/releases/latest/download/Earshot.dmg) and drag **Earshot** into **Applications**.
 2. The release is open source and not yet notarised by Apple, so the first launch is blocked. Open **System Settings → Privacy & Security**, scroll down and click **Open Anyway**. Or run:
 
    ```bash
