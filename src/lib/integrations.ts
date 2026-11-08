@@ -34,7 +34,7 @@ export const mcpDisconnect = (id: string) => invoke<void>("mcp_disconnect", { id
 export const mcpStatus = (id: string) => invoke<boolean>("mcp_status", { id });
 export const mcpTools = (id: string, url: string) => invoke<McpTool[]>("mcp_tools", { id, url });
 const mcpCall = (id: string, url: string, tool: string, args: Record<string, unknown>) => invoke<unknown>("mcp_call", { id, url, tool, args });
-const skillLoad = (path: string) => invoke<string>("skill_load", { path });
+export const skillLoad = (path: string) => invoke<string>("skill_load", { path });
 
 export function connectors(): ConnectorDef[] {
   return [...BUILTIN_CONNECTORS, ...(getSettings().customConnectors ?? [])];

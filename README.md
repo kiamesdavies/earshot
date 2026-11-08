@@ -20,6 +20,9 @@
 
 <p align="center"><sub>macOS 26+ · Apple silicon · bring your own model · free and open source (MIT)</sub></p>
 
+> [!WARNING]
+> **AI-generated.** Earshot's code and docs were written with AI and have not been reviewed by a human. Read the code before you trust it with your calls, and please report anything that looks wrong.
+
 ![Earshot during a call: transcript in the middle, nudges and chat on the right](docs/screenshot.png)
 
 <sub>The demo call shipped in `fixtures/demo-call`. Every name and number in it is made up.</sub>
@@ -35,6 +38,15 @@ Meeting tools write you a summary after the call. By then the moment has passed.
 - **Your models, your bill.** Use the Anthropic API, OpenAI, OpenRouter, any OpenAI-compatible server (Ollama, LM Studio, Groq), or the `claude`, `codex` and `kiro-cli` you already have installed.
 - **Works with your tools.** Back a topic with a page in Spacesheep, Notion or any MCP server. Earshot pulls it before the call, and after the call a skill drafts the record and writes it back once you approve it.
 
+## Topics and sessions
+
+- A **session** is one call: a scratchpad with the transcript, your notes, the nudges and the chat.
+- A **topic** is what the call was about: a brain made of markdown files. It holds your prep docs, a note from every call, and **`memory.md`**, which is rewritten after each call to hold what is still true: people, facts, decisions, open loops, a timeline and lessons for the next call.
+- Each topic can bring **its own summary format**, as a skill or a few headings you write, so a sales call and a weekly team meeting get the notes they need.
+- **Link a topic to Spacesheep, Notion or any MCP server** to share the brain. Your team and their AI agents read the same page, and you approve every write.
+
+**[Read the guide to topics and sessions →](docs/topics-and-sessions.md)**
+
 ## Features
 
 | | |
@@ -44,7 +56,7 @@ Meeting tools write you a summary after the call. By then the moment has passed.
 | 💡 **Live nudges** | A cheap "speak or stay silent" gate, then a suggester that searches your topic notes. Timing, cooldown and strictness are all adjustable. |
 | 🪟 **Floating window** | When you switch to Zoom, Meet or Teams, a small always-on-top card shows one nudge at a time. Step through cards with ← and →. Open it from any app with ⌃⌥N. |
 | 📞 **Call detection** | Notices when another app starts using the mic and offers to start, like Granola. Stops by itself when the call ends. |
-| 📁 **Topics as markdown** | Plain files in `~/Documents/Earshot`. Point it at an Obsidian vault if you like. |
+| 🧠 **Topics that learn** | Plain markdown in `~/Documents/Earshot`, with a `memory.md` that every call updates and your own summary format per topic. Point it at an Obsidian vault if you like. |
 | 💬 **Chat that does things** | "Save the key decisions to the topic", "append to prep.md that…", "rename this session". Tools can read and edit markdown but never delete. |
 | 🔌 **MCP connectors** | OAuth sign-in in your browser, a pull before each session, a skill-drafted record after it, and a write-back only when you press Publish. **Test before & after** checks the whole loop without writing anything. |
 | 📏 **Measurable** | Bookmark moments when you wished for a nudge (⌘B), then replay the call through any model and get precision, recall and latency. |
@@ -263,7 +275,10 @@ Model calls are real; session time is simulated and advanced by the actual wall-
 ```
 ~/Documents/Earshot/
   topics/<topic>/*.md                 your prep docs
+  topics/<topic>/memory.md            the topic's memory, updated after every call
+  topics/<topic>/topic-settings.json  summary format (skill or written) and memory on/off
   topics/<topic>/sessions/<date>-<title>.md   notes + transcript from each linked call
+  topics/<topic>/linked/              read-only copies of connected sources
   sessions/<id>/session.json  transcript.jsonl  suggestions.jsonl  moments.json  chat.json  notes.md  me.wav  them.wav
 ```
 

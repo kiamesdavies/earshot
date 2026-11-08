@@ -11,6 +11,8 @@ import type { ChatMessage } from "../core/types";
 import { useCollapsed } from "../lib/panels";
 import { ChatBox } from "./ChatBox";
 import { LinkedSource } from "./LinkedSource";
+import { TopicBrain } from "./TopicBrain";
+import { isMemoryDoc } from "../core/memory";
 import { Markdown } from "./Markdown";
 import { IconCheck, IconEdit, IconFolderOpen, IconPlus, IconSend, IconTopics, IconUpload } from "./icons";
 
@@ -146,7 +148,7 @@ export function TopicsView() {
             <div>
               <strong>{t.slug}</strong>
               <small>
-                {t.files.filter((f) => !f.isSession).length} docs · {t.files.filter((f) => f.isSession).length} sessions
+                {t.files.filter((f) => !f.isSession && !isMemoryDoc(f.path)).length} docs · {t.files.filter((f) => f.isSession).length} sessions
               </small>
             </div>
           </button>
@@ -164,6 +166,9 @@ export function TopicsView() {
             <div className="topic-files">
               <h4 className="section-head">Linked source</h4>
               <LinkedSource slug={topic.slug} onChanged={refresh} />
+              <div className="section-divider" />
+              <h4 className="section-head">How this topic learns</h4>
+              <TopicBrain slug={topic.slug} onOpen={setFile} onChanged={refresh} />
               <div className="section-divider" />
               <h4 className="section-head">Your files</h4>
               <div className="toolbar">
@@ -189,9 +194,21 @@ export function TopicsView() {
                     ))}
                 </>
               )}
+              {topic.files.some((f) => isMemoryDoc(f.path)) && (
+                <>
+                  <h4>Memory</h4>
+                  {topic.files
+                    .filter((f) => isMemoryDoc(f.path))
+                    .map((f) => (
+                      <button key={f.path} className={`file ${file === f.path ? "on" : ""}`} onClick={() => setFile(f.path)}>
+                        🧠 {f.name}
+                      </button>
+                    ))}
+                </>
+              )}
               <h4>Prep docs</h4>
               {topic.files
-                .filter((f) => !f.isSession && !f.path.includes("/linked/"))
+                .filter((f) => !f.isSession && !f.path.includes("/linked/") && !isMemoryDoc(f.path))
                 .map((f) => (
                   <button key={f.path} className={`file ${file === f.path ? "on" : ""}`} onClick={() => setFile(f.path)}>
                     {f.name}

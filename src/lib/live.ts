@@ -9,11 +9,12 @@ import { describeRole, ModelClient, type Role } from "../core/providers";
 import { Retriever, tokenize } from "../core/retrieval";
 import type { ChatMessage, Moment, Segment, SessionMeta, Suggestion } from "../core/types";
 import { askSession } from "./assistant";
-import { captureStart, captureStop, fsAppend, fsWrite, logEvent, recordingDelete, transport, type SttConfig } from "./backend";
+import { captureStart, captureStop, fsAppend, fsWrite, logEvent, readJson, recordingDelete, transport, type SttConfig } from "./backend";
 import { buildVocabulary } from "./vocabulary";
 import { pullTopicsForSession, runPostHooks } from "./integrations";
 import { loadTopicDocs, newSessionId, slugify } from "./library";
 import { getSettings } from "./settings";
+import { foldSession, loadTopicSettings, summaryFormat } from "./topicBrain";
 
 export type Phase = "idle" | "starting" | "live" | "stopping" | "summarizing" | "done" | "error";
 
@@ -470,9 +471,31 @@ export async function generateNotes(dir: string, meta: SessionMeta, segments: Se
     const settings = getSettings();
     const modelClient = new ModelClient(settings.models, transport);
     const topicDocs = await loadTopicDocs(meta.topics);
-    const notes = await summarize((r, q) => modelClient.complete(r, q), meta, segments, suggestions, topicDocs, myNotes);
+    const complete = (r: Role, q: Parameters<ModelClient["complete"]>[1]) => modelClient.complete(r, q);
+    // Each topic may bring its own summary format (a skill); topics sharing a format share one summary.
+    const formats = await Promise.all(
+      meta.topics.map(async (t) =>
+        summaryFormat(await loadTopicSettings(t)).catch((e) => {
+          warn(`Summary format for ${t}: ${String(e).slice(0, 160)}. Using the default.`);
+          return "";
+        }),
+      ),
+    );
+    const byFormat = new Map<string, Promise<string>>();
+    const notesFor = (format: string) => {
+      if (!byFormat.has(format)) byFormat.set(format, summarize(complete, meta, segments, suggestions, topicDocs, myNotes, format || undefined));
+      return byFormat.get(format)!;
+    };
+    const notes = await notesFor(formats[0] ?? "");
+    const notesByTopic: Record<string, string> = {};
+    for (const [i, t] of meta.topics.entries()) notesByTopic[t] = await notesFor(formats[i]);
     await fsWrite(`${dir}/notes.md`, notes);
-    await saveToTopics(meta, notes, myNotes, segments);
+    await saveToTopics(meta, notes, myNotes, segments, notesByTopic);
+    // Fold the call into each topic's memory.md in the background (the topic "learns").
+    const moments = await readJson<Moment[]>(`${dir}/moments.json`, []);
+    for (const t of meta.topics) {
+      foldSession(t, meta, notesByTopic[t], myNotes, moments, `topics/${t}/sessions/${sessionFileName(meta)}`).catch((e) => warn(`Memory for ${t}: ${String(e).slice(0, 200)}`));
+    }
     if (isLive) set({ phase: "done", notes, status: "Notes saved" });
     return notes;
   } catch (error) {
@@ -482,11 +505,11 @@ export async function generateNotes(dir: string, meta: SessionMeta, segments: Se
   }
 }
 
+export const sessionFileName = (meta: SessionMeta) => `${meta.id.slice(0, 10)}-${slugify(meta.title)}-${meta.id.slice(11)}.md`;
+
 /** One markdown file per session in each linked topic, keyed by session id so re-saves overwrite. */
-export async function saveToTopics(meta: SessionMeta, notes: string, myNotes: string, segments: Segment[]) {
-  const markdown = sessionMarkdown(meta, notes, myNotes, segments);
-  const fileName = `${meta.id.slice(0, 10)}-${slugify(meta.title)}-${meta.id.slice(11)}.md`;
-  for (const topic of meta.topics) await fsWrite(`topics/${topic}/sessions/${fileName}`, markdown);
+export async function saveToTopics(meta: SessionMeta, notes: string, myNotes: string, segments: Segment[], notesByTopic: Record<string, string> = {}) {
+  for (const topic of meta.topics) await fsWrite(`topics/${topic}/sessions/${sessionFileName(meta)}`, sessionMarkdown(meta, notesByTopic[topic] ?? notes, myNotes, segments));
 }
 
 export function resetLive() {

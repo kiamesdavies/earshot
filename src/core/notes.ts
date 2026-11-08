@@ -33,9 +33,11 @@ export async function summarize(
   suggestions: Suggestion[],
   docs: Doc[],
   myNotes: string,
+  /** A topic's own summary format (skill instructions), replacing the default sections. */
+  format?: string,
 ): Promise<string> {
   const reply = await complete("summarize", {
-    system: SUMMARY_SYSTEM,
+    system: format?.trim() ? customSummarySystem(format) : SUMMARY_SYSTEM,
     context: topicContext(docs),
     messages: [
       {
@@ -131,3 +133,18 @@ New facts, reversals, or contradictions vs. the topic notes.
 Short direct quotes worth keeping, with timestamps.
 
 Be specific: names, numbers, dates exactly as said. No filler. Do not include a top-level title.`;
+
+const SUMMARY_BASE = `You write post-call notes for ME from a call transcript (ME = the user, THEM = the other side) and ME's own notes taken during the call.
+ME's notes show what ME found important: give them priority. Use the topic notes (memory, prep docs and earlier calls) for names and context, and say what moved forward since the last call.
+Be specific: names, numbers, dates exactly as said. No filler. Never invent facts that are not in the material; if the format asks for something the call didn't cover, say "Not covered".`;
+
+/** The summary prompt when a topic brings its own format (a skill or written instructions). */
+export function customSummarySystem(format: string): string {
+  return `${SUMMARY_BASE}
+
+ME chose the format for this topic's notes. Follow it exactly: its sections, order, headings, tone and length. It overrides any default structure.
+<format>
+${format.trim().slice(0, 30_000)}
+</format>
+Return only the notes in that format, as markdown.`;
+}
