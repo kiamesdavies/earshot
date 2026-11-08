@@ -3,9 +3,13 @@
 // the model (and silently dropping the oldest when they no longer fit), each
 // topic keeps one living file, memory.md, that every new call is folded into:
 // people, facts, decisions, open loops, a timeline, and lessons about how these
-// calls go, written as markdown the user can read and correct.
+// calls go. Context for a call = memory.md + prep docs + the last few session
+// notes in full. Older sessions stay on disk and in search, but the model
+// reads them through the memory. This is compaction, done once per call,
+// written as markdown the user can read and correct.
 
 import type { Completion, CompletionRequest, Role } from "./providers.ts";
+import type { Doc } from "./retrieval.ts";
 import type { Moment } from "./types.ts";
 
 type Complete = (role: Role, req: CompletionRequest) => Promise<Completion>;
@@ -72,6 +76,19 @@ function cleanMemory(text: string, topic: string): string {
   let out = text.trim().replace(/^```(?:markdown|md)?\n([\s\S]*?)\n```$/, "$1").trim();
   if (!out.startsWith("# ")) out = `# ${topic}: memory\n\n${out}`;
   return `${out}\n`;
+}
+
+/**
+ * Topic docs as one context block, compacted: memory first, then prep docs,
+ * then the newest `recent` session notes in full. Older sessions are left to
+ * the memory (and to search) instead of being cut off at an arbitrary length.
+ */
+export function compactTopicDocs(docs: Doc[], recent = 3): { docs: Doc[]; folded: number } {
+  const memory = docs.filter((d) => isMemoryDoc(d.path));
+  if (!memory.length) return { docs, folded: 0 };
+  const prep = docs.filter((d) => !isMemoryDoc(d.path) && !isSessionDoc(d.path));
+  const sessions = docs.filter((d) => isSessionDoc(d.path)).sort((a, b) => b.path.localeCompare(a.path));
+  return { docs: [...memory, ...prep, ...sessions.slice(0, recent)], folded: Math.max(0, sessions.length - recent) };
 }
 
 const MEMORY_SYSTEM = `You maintain memory.md: the long-term memory of one topic (a person, deal, project or team ME has recurring calls about). It is read before every future call on this topic, by ME, by the live copilot, and possibly by other people and AI agents. It replaces re-reading every past call, so it must hold everything that still matters.

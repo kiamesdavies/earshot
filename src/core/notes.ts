@@ -5,16 +5,24 @@
 
 import { formatTranscript } from "./copilot.ts";
 import type { Completion, CompletionRequest, Role } from "./providers.ts";
+import { compactTopicDocs } from "./memory.ts";
 import type { Doc } from "./retrieval.ts";
 import type { Segment, SessionMeta, Suggestion } from "./types.ts";
 
 type Complete = (role: Role, req: CompletionRequest) => Promise<Completion>;
 
-/** Topic docs as one cacheable context block. Most recent session notes are kept when trimming. */
-export function topicContext(docs: Doc[], maxChars = 60_000): string {
+/**
+ * Topic docs as one cacheable context block. With a memory.md, older session notes are
+ * compacted into it (see memory.ts); without one, the newest session notes are kept when trimming.
+ */
+export function topicContext(docs: Doc[], maxChars = 60_000, recentSessions = 3): string {
   if (!docs.length) return "";
-  const ordered = [...docs.filter((d) => !d.path.includes("/sessions/")), ...docs.filter((d) => d.path.includes("/sessions/")).sort((a, b) => b.path.localeCompare(a.path))];
+  const { docs: kept, folded } = compactTopicDocs(docs, recentSessions);
+  const ordered = folded
+    ? kept
+    : [...kept.filter((d) => !d.path.includes("/sessions/")), ...kept.filter((d) => d.path.includes("/sessions/")).sort((a, b) => b.path.localeCompare(a.path))];
   let out = "<topic_notes>\n";
+  if (folded) out += `<!-- ${folded} older call notes are folded into memory.md -->\n`;
   for (const doc of ordered) {
     const block = `<doc path="${doc.path}">\n${doc.content.trim()}\n</doc>\n`;
     if (out.length + block.length > maxChars) {

@@ -54,7 +54,7 @@ Every call makes the topic a little smarter. When a session ends:
    └─► the summary, your notes and your ⌘B bookmarks are folded into memory.md
            │
            ▼
- next call on the topic starts from memory.md and your prep docs
+ next call on the topic starts from memory.md + your prep docs + the last 3 calls in full
 ```
 
 `memory.md` is not a pile of old summaries. After each call, a model rewrites it so that it holds what is still true:
@@ -71,6 +71,12 @@ Every call makes the topic a little smarter. When a session ends:
 It's your file. Open it from **How this topic learns → Memory → Open** and edit anything. The next update keeps your edits unless a later call contradicts them. **Rebuild** reads every saved call again, oldest first, and writes the memory from scratch. Use it after editing old session notes, or to start using memory on an existing topic.
 
 Earshot records which calls are already in the memory (`topics/<topic>/.memory.json`), so regenerating a summary never counts a call twice. To turn memory off for a topic, untick it under **Summary format → Change**.
+
+### Why this matters: compaction
+
+Without memory, every call adds another session note, and after a few months a topic holds more than any model can read at once. The old approach kept the newest notes and quietly dropped the oldest when they didn't fit. The decision you made in March fell out of context in June.
+
+With memory, the model reads one compact file that already holds everything that still matters, plus your prep docs and the last three calls in full. Older session notes stay on disk and in search, so a nudge can still quote one, but they no longer crowd out the context. A topic's context stays about the same size whether it has 3 calls or 300.
 
 ## Your summary format: bring a skill
 

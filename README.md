@@ -43,6 +43,7 @@ Meeting tools write you a summary after the call. By then the moment has passed.
 - A **session** is one call: a scratchpad with the transcript, your notes, the nudges and the chat.
 - A **topic** is what the call was about: a brain made of markdown files. It holds your prep docs, a note from every call, and **`memory.md`**, which is rewritten after each call to hold what is still true: people, facts, decisions, open loops, a timeline and lessons for the next call.
 - Each topic can bring **its own summary format**, as a skill or a few headings you write, so a sales call and a weekly team meeting get the notes they need.
+- **Memory doubles as compaction.** The next call reads `memory.md`, your prep docs and the last three calls in full. Older notes stay searchable but no longer crowd out the context, so a topic with 300 calls costs about the same as one with 3.
 - **Link a topic to Spacesheep, Notion or any MCP server** to share the brain. Your team and their AI agents read the same page, and you approve every write.
 
 **[Read the guide to topics and sessions →](docs/topics-and-sessions.md)**
