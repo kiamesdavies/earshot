@@ -36,3 +36,4 @@ export const IconPin = make(["M12 17v5", "M9 10.76V6h6v4.76l2 3.24H7z", "M8 2h8"
 export const IconFact = make(["M4 19.5A2.5 2.5 0 0 1 6.5 17H20", "M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"]);
 export const IconTrash = make(["M3 6h18", "M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2", "M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6", "M10 11v6", "M14 11v6"]);
 export const IconShield = make(["M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"]);
+export const IconFeedback = make(["M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z", "M8 9h8", "M8 13h5"]);

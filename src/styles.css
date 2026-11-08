@@ -1798,3 +1798,93 @@ body.mini-body #root {
   font-family: var(--mono, ui-monospace, monospace);
   font-size: 12px;
 }
+
+/* ---------- loading progress ---------- */
+
+.list-progress {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0 0 10px;
+}
+.list-progress.wide {
+  width: min(320px, 70%);
+  align-items: center;
+}
+.list-progress .bar {
+  width: 100%;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--line);
+  overflow: hidden;
+}
+.list-progress .bar i {
+  display: block;
+  height: 100%;
+  background: var(--accent, #e8833a);
+  transition: width 0.25s ease;
+}
+.list-progress .bar i.indeterminate {
+  width: 35%;
+  animation: progress-slide 1.1s ease-in-out infinite;
+}
+@keyframes progress-slide {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(300%);
+  }
+}
+.session-card.skeleton {
+  opacity: 0.75;
+}
+.skeleton-line {
+  display: inline-block;
+  width: 140px;
+  height: 0.8em;
+  border-radius: 4px;
+  background: linear-gradient(90deg, var(--line) 0%, rgba(255, 255, 255, 0.12) 50%, var(--line) 100%);
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.2s linear infinite;
+}
+@keyframes skeleton-shimmer {
+  from {
+    background-position: 200% 0;
+  }
+  to {
+    background-position: -200% 0;
+  }
+}
+
+/* ---------- feedback ---------- */
+
+.segmented {
+  display: flex;
+  gap: 4px;
+  padding: 3px;
+  margin-bottom: 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+}
+.segmented button {
+  flex: 1;
+  padding: 6px 8px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--muted, #9a9a9a);
+  font: inherit;
+  font-size: 12.5px;
+  cursor: pointer;
+}
+.segmented button.on {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+.modal .check {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 4px 0 8px;
+}

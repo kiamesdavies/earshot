@@ -7,7 +7,7 @@
 
 import type { Doc } from "../core/retrieval";
 import type { ChatMessage, Moment, Segment, SessionMeta, Suggestion } from "../core/types";
-import { sessionLoad, sessionsList, sessionTranscript, topicsList } from "./backend";
+import { sessionLoad, sessionMeta, sessionsDirs, sessionsList, sessionTranscript, topicsList } from "./backend";
 
 export interface Topic {
   slug: string;
@@ -42,6 +42,23 @@ export interface SessionSummary {
 
 export async function listSessions(): Promise<SessionSummary[]> {
   return (await sessionsList()) as SessionSummary[];
+}
+
+export interface SessionRow {
+  dir: string;
+  /** Files iCloud has evicted; opening them waits for a download. */
+  offlineFiles: number;
+  meta?: SessionMeta;
+  error?: string;
+}
+
+/** Session folders, newest first, without reading them (instant). */
+export async function listSessionDirs(): Promise<SessionRow[]> {
+  return sessionsDirs();
+}
+
+export async function loadSessionMeta(dir: string): Promise<SessionMeta> {
+  return (await sessionMeta(dir)) as SessionMeta;
 }
 
 export interface SessionData {

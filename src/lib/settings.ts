@@ -40,7 +40,7 @@ export const DEFAULT_SETTINGS: Settings = {
   copilot: DEFAULT_COPILOT_CONFIG,
   stt: { engine: "apple", modelPath: "", vocabulary: "" },
   keepAudioDays: 14,
-  autoStop: { afterCallEndMin: 2, idleMin: 15, maxHours: 4 },
+  autoStop: { afterCallEndMin: 0.5, idleMin: 15, maxHours: 4 },
   autoPopOut: true,
 };
 
@@ -63,7 +63,8 @@ export async function loadSettings(): Promise<Settings> {
     models: { ...models, providers: [...upgraded, ...DEFAULT_MODEL_SETTINGS.providers.filter((p) => !known.has(p.id))] },
     copilot: { ...DEFAULT_COPILOT_CONFIG, ...saved.copilot },
     stt: { ...DEFAULT_SETTINGS.stt, ...saved.stt },
-    autoStop: { ...DEFAULT_SETTINGS.autoStop, ...saved.autoStop },
+    // 2 minutes was the old default for stopping after a call; it now stops after 30 seconds.
+    autoStop: { ...DEFAULT_SETTINGS.autoStop, ...saved.autoStop, ...(saved.autoStop?.afterCallEndMin === 2 ? { afterCallEndMin: 0.5 } : {}) },
   };
   // First run: use the best local model already on disk (Handy's), else Apple's.
   if (!saved.stt) {

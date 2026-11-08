@@ -182,7 +182,7 @@ export function SettingsView() {
       <section>
         <h2>Stop automatically</h2>
         <p className="muted">So a session you forget to stop can't keep recording. 0 turns a rule off.</p>
-        <NumberRow label="Minutes after the call app releases the mic" value={settings.autoStop.afterCallEndMin} step={1} onChange={(v) => updateSettings({ autoStop: { ...settings.autoStop, afterCallEndMin: v } })} />
+        <NumberRow label="Minutes after the call ends (0.5 = 30 seconds)" value={settings.autoStop.afterCallEndMin} step={0.5} onChange={(v) => updateSettings({ autoStop: { ...settings.autoStop, afterCallEndMin: v } })} />
         <NumberRow label="Minutes with no one speaking" value={settings.autoStop.idleMin} step={1} onChange={(v) => updateSettings({ autoStop: { ...settings.autoStop, idleMin: v } })} />
         <NumberRow label="Longest session (hours)" value={settings.autoStop.maxHours} step={1} onChange={(v) => updateSettings({ autoStop: { ...settings.autoStop, maxHours: v } })} />
       </section>

@@ -28,6 +28,8 @@ export const dataRoot = () => (rootCache ??= invoke<string>("data_root"));
 export const resetDataRootCache = () => void (rootCache = null);
 
 // Batched reads: one IPC round trip per screen instead of one per file.
+export const sessionsDirs = () => invoke<{ dir: string; offlineFiles: number }[]>("sessions_dirs");
+export const sessionMeta = (dir: string) => invoke<unknown>("session_meta", { dir });
 export const sessionsList = () => invoke<{ dir: string; meta: unknown }[]>("sessions_list");
 export const sessionLoad = (dir: string) =>
   invoke<{ meta: unknown; suggestions: unknown[]; moments: unknown[]; chat: unknown[]; notes: string; myNotes: string; segmentCount: number }>("session_load", { dir });

@@ -1,7 +1,8 @@
 import { listen } from "@tauri-apps/api/event";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { lazy, Suspense, useEffect, useState } from "react";
-import { IconMic, IconSessions, IconSettings, IconStop, IconTopics } from "./components/icons";
+import { IconFeedback, IconMic, IconSessions, IconSettings, IconStop, IconTopics } from "./components/icons";
+import { FeedbackDialog } from "./components/Feedback";
 import { SessionsView } from "./components/Sessions";
 const SettingsView = lazy(() => import("./components/Settings").then((m) => ({ default: m.SettingsView })));
 import { StartDialog } from "./components/StartDialog";
@@ -47,7 +48,10 @@ export default function App() {
       setCallEnded(true);
       noteCallEnded();
     });
-    const offDetected = listen("call-detected", () => noteCallStarted());
+    const offDetected = listen("call-resumed", () => {
+      setCallEnded(false);
+      noteCallStarted();
+    });
     const uninstallMini = installMiniBridge(() => getSettings().autoPopOut);
     return () => {
       offPrompt.then((f) => f());
@@ -62,6 +66,7 @@ export default function App() {
   }, [live.phase]);
 
   const isRecording = live.phase === "live" || live.phase === "starting";
+  const [feedback, setFeedback] = useState(false);
 
   return (
     <div className="app">
@@ -77,6 +82,7 @@ export default function App() {
         <RailButton icon={<IconTopics />} label="Topics" on={view === "topics"} onClick={() => setView("topics")} />
         <RailButton icon={<IconSettings />} label="Settings" on={view === "settings"} onClick={() => setView("settings")} />
         <div className="spacer" />
+        <RailButton icon={<IconFeedback />} label="Feedback" on={feedback} onClick={() => setFeedback(true)} />
         {isRecording ? (
           <button className="start-btn recording" onClick={() => stopSession()}>
             <IconStop size={18} />
@@ -97,14 +103,24 @@ export default function App() {
         )}
       </nav>
 
+      {feedback && <FeedbackDialog onClose={() => setFeedback(false)} />}
       <main className="main">
         {callEnded && isRecording && (
           <div className="toast">
-            The call seems to have ended.
+            The call ended.{" "}
+            {settings.autoStop.afterCallEndMin > 0
+              ? `Stopping in about ${settings.autoStop.afterCallEndMin < 1 ? `${Math.round(settings.autoStop.afterCallEndMin * 60)} seconds` : `${settings.autoStop.afterCallEndMin} min`} unless someone speaks.`
+              : ""}
             <button className="btn small primary" onClick={() => stopSession()}>
               Stop & write notes
             </button>
-            <button className="btn small ghost" onClick={() => setCallEnded(false)}>
+            <button
+              className="btn small ghost"
+              onClick={() => {
+                setCallEnded(false);
+                noteCallStarted();
+              }}
+            >
               Keep listening
             </button>
           </div>

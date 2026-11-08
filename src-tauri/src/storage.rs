@@ -182,6 +182,72 @@ pub struct SessionListItem {
     meta: Value,
 }
 
+/// True when iCloud ("Optimize Mac Storage") has evicted the file: reading it waits for a download.
+fn is_dataless(path: &Path) -> bool {
+    #[cfg(target_os = "macos")]
+    {
+        use std::os::macos::fs::MetadataExt;
+        const SF_DATALESS: u32 = 0x4000_0000;
+        fs::symlink_metadata(path).map(|m| m.st_flags() & SF_DATALESS != 0).unwrap_or(false)
+    }
+    #[cfg(not(target_os = "macos"))]
+    {
+        let _ = path;
+        false
+    }
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SessionDir {
+    dir: String,
+    /// Files in the folder that iCloud has evicted (each read downloads it first).
+    offline_files: usize,
+}
+
+/// Session folders, newest first, without reading any file: instant even when iCloud has evicted them.
+/// The UI then loads each session's session.json on its own (session_meta), in parallel.
+#[tauri::command]
+pub async fn sessions_dirs(storage: State<'_, Storage>) -> Result<Vec<SessionDir>, String> {
+    let root = storage.resolve("sessions")?;
+    let started = std::time::Instant::now();
+    let result = blocking(move || {
+        let mut out: Vec<SessionDir> = fs::read_dir(&root)
+            .into_iter()
+            .flatten()
+            .flatten()
+            .filter(|e| e.path().is_dir() && !e.file_name().to_string_lossy().starts_with('.'))
+            .map(|e| {
+                let offline_files = fs::read_dir(e.path()).into_iter().flatten().flatten().filter(|f| is_dataless(&f.path())).count();
+                SessionDir { dir: format!("sessions/{}", e.file_name().to_string_lossy()), offline_files }
+            })
+            .collect();
+        out.sort_by(|a, b| b.dir.cmp(&a.dir));
+        Ok(out)
+    })
+    .await;
+    crate::logging::info("perf", &format!("sessions_dirs: {:?} in {} ms", result.as_ref().map(|v| v.len()), started.elapsed().as_millis()));
+    result
+}
+
+/// One session's session.json.
+#[tauri::command]
+pub async fn session_meta(storage: State<'_, Storage>, dir: String) -> Result<Value, String> {
+    let path = storage.resolve(&dir)?.join("session.json");
+    let started = std::time::Instant::now();
+    let offline = is_dataless(&path);
+    let result = blocking(move || {
+        let text = read_opt(&path).ok_or_else(|| format!("{}: no session.json", path.display()))?;
+        serde_json::from_str(&text).map_err(|e| e.to_string())
+    })
+    .await;
+    let ms = started.elapsed().as_millis();
+    if ms > 300 || offline {
+        crate::logging::info("perf", &format!("session_meta {dir}: {} ms{}", ms, if offline { " (downloaded from iCloud)" } else { "" }));
+    }
+    result
+}
+
 /// Every session's session.json, newest first.
 #[tauri::command]
 pub async fn sessions_list(storage: State<'_, Storage>) -> Result<Vec<SessionListItem>, String> {
@@ -227,18 +293,31 @@ pub async fn session_load(storage: State<'_, Storage>, dir: String) -> Result<Se
     let started = std::time::Instant::now();
     let label = dir.clone();
     let result = blocking(move || {
-        let json = |name: &str, fallback: Value| read_opt(&base.join(name)).and_then(|t| serde_json::from_str(&t).ok()).unwrap_or(fallback);
-        let segment_count = fs::File::open(base.join("transcript.jsonl"))
-            .map(|f| std::io::BufRead::lines(std::io::BufReader::new(f)).count())
-            .unwrap_or(0);
-        Ok(SessionBundle {
-            meta: json("session.json", Value::Object(Default::default())),
-            suggestions: read_jsonl(&base.join("suggestions.jsonl")),
-            moments: json("moments.json", Value::Array(vec![])),
-            chat: json("chat.json", Value::Array(vec![])),
-            notes: read_opt(&base.join("notes.md")).unwrap_or_default(),
-            my_notes: read_opt(&base.join("my-notes.md")).unwrap_or_default(),
-            segment_count,
+        // Read the files side by side: when iCloud has evicted them, each read waits for a
+        // download, and doing them in parallel costs one wait instead of six.
+        let b = &base;
+        let json = |name: &str, fallback: Value| read_opt(&b.join(name)).and_then(|t| serde_json::from_str(&t).ok()).unwrap_or(fallback);
+        std::thread::scope(|s| {
+            let segment_count = s.spawn(|| {
+                fs::File::open(b.join("transcript.jsonl"))
+                    .map(|f| std::io::BufRead::lines(std::io::BufReader::new(f)).count())
+                    .unwrap_or(0)
+            });
+            let meta = s.spawn(|| json("session.json", Value::Object(Default::default())));
+            let suggestions = s.spawn(|| read_jsonl(&b.join("suggestions.jsonl")));
+            let moments = s.spawn(|| json("moments.json", Value::Array(vec![])));
+            let chat = s.spawn(|| json("chat.json", Value::Array(vec![])));
+            let notes = s.spawn(|| read_opt(&b.join("notes.md")).unwrap_or_default());
+            let my_notes = s.spawn(|| read_opt(&b.join("my-notes.md")).unwrap_or_default());
+            Ok(SessionBundle {
+                meta: meta.join().unwrap_or_default(),
+                suggestions: suggestions.join().unwrap_or_default(),
+                moments: moments.join().unwrap_or(Value::Array(vec![])),
+                chat: chat.join().unwrap_or(Value::Array(vec![])),
+                notes: notes.join().unwrap_or_default(),
+                my_notes: my_notes.join().unwrap_or_default(),
+                segment_count: segment_count.join().unwrap_or(0),
+            })
         })
     })
     .await;
@@ -391,4 +470,17 @@ pub async fn skill_load(path: String) -> Result<String, String> {
         fs::read_to_string(&file).map_err(|e| format!("{}: {e}", file.display()))
     })
     .await
+}
+
+/// "macOS 26.1 (arm64)" for feedback reports.
+#[tauri::command]
+pub fn system_info() -> String {
+    let version = std::process::Command::new("/usr/bin/sw_vers")
+        .arg("-productVersion")
+        .output()
+        .ok()
+        .map(|o| String::from_utf8_lossy(&o.stdout).trim().to_string())
+        .filter(|v| !v.is_empty())
+        .unwrap_or_else(|| "?".into());
+    format!("macOS {version} ({})", std::env::consts::ARCH)
 }

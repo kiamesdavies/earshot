@@ -20,6 +20,11 @@ pub struct Audio {
     capture: Mutex<Option<CaptureHandle>>,
     mic_users: Mutex<BTreeSet<String>>,
     pub auto_prompt: Mutex<bool>,
+    /// The app that most recently started using the mic (the likely call app).
+    last_started: Mutex<Option<String>>,
+    /// The call app the running session follows: when it releases the mic, the call is over.
+    /// Other apps that hold the mic (helpers, dictation) don't keep the session alive.
+    call_app: Mutex<Option<String>>,
 }
 
 struct CaptureHandle {
@@ -103,6 +108,9 @@ fn on_mic_users(app: &AppHandle, apps: &Value) {
         .collect();
     let previous = std::mem::replace(&mut *audio.mic_users.lock().unwrap(), current.clone());
     let started: Vec<&String> = current.difference(&previous).collect();
+    if let Some(first) = started.iter().find(|id| !is_background_mic_user(id)) {
+        *audio.last_started.lock().unwrap() = Some((*first).clone());
+    }
 
     if let Some(bundle_id) = started.first() {
         let name = friendly_name(bundle_id);
@@ -111,8 +119,35 @@ fn on_mic_users(app: &AppHandle, apps: &Value) {
         if capture_pid.is_none() && *audio.auto_prompt.lock().unwrap() {
             show_prompt(app, &name);
         }
+    }
+
+    if capture_pid.is_some() {
+        // Follow the session's call app. If the session started before any call app was seen, adopt the first one that starts.
+        let mut call_app = audio.call_app.lock().unwrap();
+        if call_app.is_none() {
+            if let Some(first) = started.iter().find(|id| !is_background_mic_user(id)) {
+                logging::info("watch", &format!("session now follows {first}"));
+                *call_app = Some((*first).clone());
+            }
+        }
+        if let Some(id) = call_app.clone() {
+            let (was, is) = (previous.contains(&id), current.contains(&id));
+            if was && !is {
+                logging::info("watch", &format!("call ended: {id} released the mic; mic users now {current:?}"));
+                let _ = app.emit("call-ended", json!({ "bundleId": id, "app": friendly_name(&id) }));
+            } else if !was && is {
+                logging::info("watch", &format!("call resumed: {id}"));
+                let _ = app.emit("call-resumed", json!({ "bundleId": id }));
+            }
+        } else if current.is_empty() && !previous.is_empty() {
+            logging::info("watch", "call ended: no app is using the mic");
+            let _ = app.emit("call-ended", json!({}));
+        }
     } else if current.is_empty() && !previous.is_empty() {
         let _ = app.emit("call-ended", json!({}));
+    }
+    if current.is_empty() || capture_pid.is_some() {
+        // No call left, or a session already started: the "Start?" card has nothing to offer.
         if let Some(prompt) = app.get_webview_window("prompt") {
             let _ = prompt.close();
         }
@@ -209,6 +244,17 @@ pub fn capture_start(
     let stderr = child.stderr.take().unwrap();
     *slot = Some(CaptureHandle { pid: child.id(), stdin: child.stdin.take() });
     drop(slot);
+    // The session follows the call app that's using the mic right now (the one that triggered the prompt, usually).
+    let follow = {
+        let users = audio.mic_users.lock().unwrap();
+        let last = audio.last_started.lock().unwrap().clone();
+        last.filter(|id| users.contains(id)).or_else(|| users.iter().find(|id| !is_background_mic_user(id)).cloned())
+    };
+    logging::info("watch", &format!("session follows {}", follow.as_deref().unwrap_or("(no call app yet)")));
+    *audio.call_app.lock().unwrap() = follow;
+    if let Some(prompt) = app.get_webview_window("prompt") {
+        let _ = prompt.close();
+    }
 
     logging::info("capture", &format!("start {} {:?}", sidecar_path().display(), args));
     let app_err = app.clone();
@@ -250,6 +296,7 @@ pub fn capture_start(
         let code = child.wait().ok().and_then(|s| s.code());
         logging::info("capture", &format!("sidecar exited with {code:?}"));
         app.state::<Audio>().capture.lock().unwrap().take();
+        app.state::<Audio>().call_app.lock().unwrap().take();
         let _ = app.emit("audio", json!({ "type": "exited", "code": code }));
     });
     Ok(())
@@ -467,4 +514,10 @@ pub fn mini_close(app: AppHandle) {
         let _ = win.close();
         logging::info("mini", "closed");
     }
+}
+
+/// Apps that hold the mic in the background and aren't calls (helpers, dictation, assistants).
+fn is_background_mic_user(bundle_id: &str) -> bool {
+    let id = bundle_id.to_ascii_lowercase();
+    id.ends_with(".helper") || id.contains("dictation") || id.contains("siri") || id.contains("corespeech") || id.contains("superwhisper") || id.contains("handy")
 }

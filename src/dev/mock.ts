@@ -109,6 +109,35 @@ export function installMock() {
             dir: k.replace("/session.json", ""),
             meta: JSON.parse(files.get(k)!),
           }));
+        case "mcp_status":
+          return a.id === "spacesheep";
+        case "mcp_tools":
+          return [
+            { name: "get_file", inputSchema: { required: ["space", "file"], properties: { space: {}, file: {}, offset: {} } } },
+            { name: "list_files", inputSchema: { required: ["space"], properties: { space: {} } } },
+            { name: "create_version", inputSchema: { required: ["space", "label", "replacements"], properties: { space: {}, label: {}, replacements: {} } } },
+          ];
+        case "mcp_call": {
+          const text =
+            a.tool === "list_files"
+              ? JSON.stringify({ files: [{ path: "docs/meetings.md" }, { path: "docs/plan.md" }] })
+              : a.tool === "get_file"
+                ? JSON.stringify({ file: { path: a.args.file, content: files.get("topics/acme-pilot/linked/spacesheep-meetings.md") ?? "" }, next_offset: 0 })
+                : JSON.stringify({ version: 4 });
+          return { content: [{ type: "text", text }] };
+        }
+        case "skill_load":
+          return "---\nname: pilot-review\ndescription: Weekly pilot review record.\n---\nWrite the record with: the week in one line, numbers, decisions, actions, what we missed.";
+        case "system_info":
+          return "macOS 26.1 (aarch64)";
+        case "plugin:app|version":
+          return "0.1.0";
+        case "sessions_dirs":
+          return [...new Set([...files.keys()].filter((k) => k.startsWith("sessions/") && k.endsWith("/session.json")))]
+            .map((k) => ({ dir: k.replace("/session.json", ""), offlineFiles: 0 }))
+            .sort((x, y) => y.dir.localeCompare(x.dir));
+        case "session_meta":
+          return new Promise((resolve) => setTimeout(() => resolve(JSON.parse(files.get(`${a.dir}/session.json`) ?? "{}")), 400));
         case "session_load": {
           const read = (n: string) => files.get(`${a.dir}/${n}`);
           const jsonl = (n: string) => (read(n) ?? "").split("\n").filter((l) => l.trim()).map((l) => JSON.parse(l));

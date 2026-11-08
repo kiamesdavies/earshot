@@ -5,7 +5,7 @@ import { clock } from "../core/copilot";
 import type { ChatMessage, Moment, Segment, SessionMeta, Suggestion } from "../core/types";
 import { askSession } from "../lib/assistant";
 import { dataRoot, fsRead, fsTrash, fsWrite, logEvent, recordingDelete, reveal, topicsList, type TopicFile } from "../lib/backend";
-import { listSessions, loadSession, loadTranscript, type SessionData, type SessionSummary } from "../lib/library";
+import { listSessionDirs, loadSession, loadSessionMeta, loadTranscript, type SessionData, type SessionRow, type SessionSummary } from "../lib/library";
 import {
   annotateMoment,
   askLive,
@@ -37,17 +37,44 @@ export function SessionsView({ selected, onSelect }: { selected: string | null; 
     dir: useLiveSelector((s) => s.dir),
     status: useLiveSelector((s) => s.status),
   };
-  const [sessions, setSessions] = useState<SessionSummary[]>([]);
+  // Last known list, kept on this Mac (not in iCloud), so the list shows instantly; each row then refreshes as it loads.
+  const [rows, setRows] = useState<SessionRow[] | null>(readCachedRows);
+  useEffect(() => {
+    if (rows?.length && rows.every((r) => r.meta || r.error)) writeCachedRows(rows);
+  }, [rows]);
   const isActive = live.phase !== "idle";
+  const loadId = useRef(0);
 
-  const refresh = () => {
+  // List the folders at once (no file reads), then load each session's details on its own,
+  // a few at a time, so cards appear one by one even when iCloud has to download them.
+  const refresh = async () => {
+    const id = ++loadId.current;
     const t0 = performance.now();
-    return listSessions()
-      .then((list) => {
-        setSessions(list);
-        logEvent("info", "perf", `sessions list: ${list.length} in ${Math.round(performance.now() - t0)} ms (${Math.round(performance.now())} ms after launch)`);
-      })
-      .catch(console.error);
+    try {
+      const dirs = await listSessionDirs();
+      if (id !== loadId.current) return;
+      setRows((cur) => {
+        const known = new Map((cur ?? []).map((r) => [r.dir, r]));
+        return dirs.map((d) => ({ ...d, meta: known.get(d.dir)?.meta }));
+      });
+      let next = 0;
+      const worker = async () => {
+        while (next < dirs.length && id === loadId.current) {
+          const { dir } = dirs[next++];
+          try {
+            const meta = await loadSessionMeta(dir);
+            if (id === loadId.current) setRows((cur) => cur?.map((r) => (r.dir === dir ? { ...r, meta, error: undefined } : r)) ?? cur);
+          } catch (e) {
+            if (id === loadId.current) setRows((cur) => cur?.map((r) => (r.dir === dir ? { ...r, error: String(e) } : r)) ?? cur);
+          }
+        }
+      };
+      await Promise.all(Array.from({ length: Math.min(6, dirs.length) }, worker));
+      if (id === loadId.current) logEvent("info", "perf", `sessions list: ${dirs.length} in ${Math.round(performance.now() - t0)} ms (${Math.round(performance.now())} ms after launch)`);
+    } catch (e) {
+      console.error(e);
+      setRows((cur) => cur ?? []);
+    }
   };
   useEffect(() => {
     refresh();
@@ -70,15 +97,29 @@ export function SessionsView({ selected, onSelect }: { selected: string | null; 
     refresh();
   };
 
-  const pastSessions = sessions.filter((s) => !(isActive && s.dir === live.dir));
+  const pastRows = (rows ?? []).filter((r) => !(isActive && r.dir === live.dir));
+  const loaded = pastRows.filter((r) => r.meta || r.error).length;
+  const loading = rows === null || loaded < pastRows.length;
+  const offline = pastRows.filter((r) => !r.meta && r.offlineFiles > 0).length;
 
   return (
     <div className="split">
       <div className="list-col">
         <div className="list-head">
           <h2>Sessions</h2>
-          <span className="count">{pastSessions.length + (isActive ? 1 : 0)}</span>
+          <span className="count">{pastRows.length + (isActive ? 1 : 0)}</span>
         </div>
+        {loading && (
+          <div className="list-progress" role="progressbar" aria-valuemin={0} aria-valuemax={pastRows.length} aria-valuenow={loaded}>
+            <div className="bar">
+              <i style={{ width: pastRows.length ? `${Math.max(6, (loaded / pastRows.length) * 100)}%` : "30%" }} className={rows === null ? "indeterminate" : ""} />
+            </div>
+            <small className="muted">
+              {rows === null ? "Finding sessions…" : `Loading ${loaded} of ${pastRows.length}`}
+              {offline > 0 && ` · ${offline} downloading from iCloud`}
+            </small>
+          </div>
+        )}
         {isActive && live.meta && (
           <button className={`card session-card live ${selected === "live" ? "selected" : ""}`} onClick={() => onSelect("live")}>
             <span className={`dot ${live.phase === "live" ? "on" : ""}`} />
@@ -88,7 +129,22 @@ export function SessionsView({ selected, onSelect }: { selected: string | null; 
             </div>
           </button>
         )}
-        {pastSessions.map((s) => (
+        {pastRows.map((row) => {
+          const s = row.meta ? ({ dir: row.dir, meta: row.meta } as SessionSummary) : null;
+          if (!s)
+            return (
+              <div key={row.dir} className={`card session-card skeleton ${selected === row.dir ? "selected" : ""}`} role="button" tabIndex={0} onClick={() => onSelect(row.dir)}>
+                <IconSessions size={16} />
+                <div>
+                  <strong>{row.error ? "Couldn't read this session" : <span className="skeleton-line" />}</strong>
+                  <small>
+                    {dirDate(row.dir)}
+                    {row.offlineFiles > 0 && !row.error ? " · in iCloud" : ""}
+                  </small>
+                </div>
+              </div>
+            );
+          return (
           <div key={s.dir} className={`card session-card ${selected === s.dir ? "selected" : ""}`} role="button" tabIndex={0} onClick={() => onSelect(s.dir)}>
             <IconSessions size={16} />
             <div>
@@ -111,8 +167,9 @@ export function SessionsView({ selected, onSelect }: { selected: string | null; 
               <IconTrash size={13} />
             </button>
           </div>
-        ))}
-        {!isActive && pastSessions.length === 0 && (
+          );
+        })}
+        {!isActive && rows !== null && pastRows.length === 0 && (
           <p className="empty">No sessions yet. Start one from the button at the bottom left, or join a call and Earshot will offer to.</p>
         )}
       </div>
@@ -120,7 +177,7 @@ export function SessionsView({ selected, onSelect }: { selected: string | null; 
         {selected === "live" && isActive ? (
           <LiveDetail onClosed={(dir) => onSelect(dir)} />
         ) : selected && selected !== "live" ? (
-          <PastDetail key={selected} dir={selected} onChanged={refresh} />
+          <PastDetail key={selected} dir={selected} onChanged={refresh} offlineFiles={rows?.find((r) => r.dir === selected)?.offlineFiles ?? 0} />
         ) : (
           <div className="placeholder">
             <p>Select a session, or start a new one.</p>
@@ -442,7 +499,7 @@ function Moments({ moments, editable, suggestions }: { moments: Moment[]; editab
 
 type PastTab = "summary" | "mynotes" | "transcript" | "topics" | "nudges";
 
-function PastDetail({ dir, onChanged }: { dir: string; onChanged: () => void }) {
+function PastDetail({ dir, onChanged, offlineFiles = 0 }: { dir: string; onChanged: () => void; offlineFiles?: number }) {
   const [data, setData] = useState<SessionData | null>(null);
   const [tab, setTab] = useState<PastTab>("summary");
   const [working, setWorking] = useState(false);
@@ -492,7 +549,19 @@ function PastDetail({ dir, onChanged }: { dir: string; onChanged: () => void }) 
     });
   }, [data?.meta.title, data?.suggestions]);
 
-  if (!data) return <div className="placeholder">Loading…</div>;
+  if (!data)
+    return (
+      <div className="placeholder">
+        <div className="list-progress wide">
+          <div className="bar">
+            <i className="indeterminate" />
+          </div>
+          <small className="muted">
+            {offlineFiles > 0 ? `Downloading ${offlineFiles} file${offlineFiles === 1 ? "" : "s"} from iCloud…` : "Opening session…"}
+          </small>
+        </div>
+      </div>
+    );
   const { meta } = data;
 
   const update = (patch: Partial<SessionData>) => setData((d) => (d ? { ...d, ...patch } : d));
@@ -628,4 +697,28 @@ function PastDetail({ dir, onChanged }: { dir: string; onChanged: () => void }) 
       <CopilotPanel live={false} suggestions={data.suggestions} moments={data.moments} chat={data.chat} busy={chatBusy} onAsk={askPast} />
     </div>
   );
+}
+
+/** "sessions/2026-11-08-141114" → a readable date while the session itself loads. */
+function dirDate(dir: string): string {
+  const m = /(\d{4})-(\d{2})-(\d{2})-(\d{2})(\d{2})/.exec(dir);
+  if (!m) return "Loading…";
+  return new Date(+m[1], +m[2] - 1, +m[3], +m[4], +m[5]).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" });
+}
+
+const ROWS_CACHE = "earshot.sessions.v1";
+function readCachedRows(): SessionRow[] | null {
+  try {
+    const raw = localStorage.getItem(ROWS_CACHE);
+    return raw ? (JSON.parse(raw) as SessionRow[]) : null;
+  } catch {
+    return null;
+  }
+}
+function writeCachedRows(rows: SessionRow[]) {
+  try {
+    localStorage.setItem(ROWS_CACHE, JSON.stringify(rows.filter((r) => r.meta).map((r) => ({ dir: r.dir, offlineFiles: 0, meta: r.meta }))));
+  } catch {
+    /* storage full or unavailable: the list just loads from disk */
+  }
 }
