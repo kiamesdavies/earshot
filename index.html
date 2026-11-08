@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Earshot</title>
+    <script>
+      // Loads before the app bundle so even a failed chunk/module load is logged.
+      (function () {
+        function report(message) {
+          try {
+            window.__TAURI_INTERNALS__ && window.__TAURI_INTERNALS__.invoke("log_event", { level: "error", category: "boot", message: String(message).slice(0, 2000) });
+          } catch (e) {}
+        }
+        window.addEventListener("error", function (e) { report((e.message || "error") + " " + (e.filename || (e.target && (e.target.src || e.target.href)) || "") + ":" + (e.lineno || "")); }, true);
+        window.addEventListener("unhandledrejection", function (e) { report("unhandled: " + (e.reason && (e.reason.stack || e.reason.message) || e.reason)); });
+      })();
+    </script>
+  </head>
+
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

@@ -1,0 +1,27 @@
+[
+ {
+  "t": 40.5,
+  "kind": "connection",
+  "note": "Dallas sync issue was ACM-118, fixed Sep 2 \u2014 should have said so"
+ },
+ {
+  "t": 64.5,
+  "kind": "connection",
+  "note": "Reno shift change in week 5 explains slower onboarding"
+ },
+ {
+  "t": 78.8,
+  "kind": "question",
+  "note": "Should have asked who else signs off / procurement process"
+ },
+ {
+  "t": 90.0,
+  "kind": "commitment",
+  "note": "Pin down: 3-site quote by end of next week, budget review on the 14th"
+ },
+ {
+  "t": 115.5,
+  "kind": "question",
+  "note": "Ask what volume spike looks like in December"
+ }
+]

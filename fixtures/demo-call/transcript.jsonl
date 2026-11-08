@@ -1,0 +1,20 @@
+{"type": "segment", "speaker": "me", "id": "me-0", "text": "Hey Dana, thanks for making time. How are things in Reno?", "start": 1.0, "end": 5.23, "final": true}
+{"type": "segment", "speaker": "them", "id": "them-0", "text": "Busy, it's peak season prep so everyone's a bit stretched. But good.", "start": 6.03, "end": 10.65, "final": true}
+{"type": "segment", "speaker": "me", "id": "me-1", "text": "Makes sense. So I wanted to walk through how the pilot went and talk next steps.", "start": 11.45, "end": 17.6, "final": true}
+{"type": "segment", "speaker": "them", "id": "them-1", "text": "Sure. Leo pulled the numbers this morning. Overall people like it. Pick accuracy in Reno went to about ninety eight percent.", "start": 18.4, "end": 26.48, "final": true}
+{"type": "segment", "speaker": "them", "id": "them-2", "text": "Dallas was lower, more like ninety seven, and honestly the first few weeks there were rough. We had a lot of scanner sync problems.", "start": 27.28, "end": 36.51, "final": true}
+{"type": "segment", "speaker": "me", "id": "me-2", "text": "Yeah, I remember that was a pain.", "start": 37.31, "end": 40.0, "final": true}
+{"type": "segment", "speaker": "them", "id": "them-3", "text": "The team is asking whether that's going to keep happening if we roll out further.", "start": 40.8, "end": 46.57, "final": true}
+{"type": "segment", "speaker": "me", "id": "me-3", "text": "Totally fair question.", "start": 47.37, "end": 48.52, "final": true}
+{"type": "segment", "speaker": "them", "id": "them-4", "text": "The other thing is onboarding. Some of the new folks in Reno took closer to a week to get comfortable, which surprised me because the early group was faster.", "start": 49.32, "end": 60.48, "final": true}
+{"type": "segment", "speaker": "me", "id": "me-4", "text": "Interesting, okay.", "start": 61.28, "end": 62.05, "final": true}
+{"type": "segment", "speaker": "them", "id": "them-5", "text": "So I think we're positive, but I need to bring this to procurement and to our CFO, and they're going to ask about cost for all three sites, not just two.", "start": 62.85, "end": 74.77, "final": true}
+{"type": "segment", "speaker": "me", "id": "me-5", "text": "Right, of course.", "start": 75.57, "end": 76.72, "final": true}
+{"type": "segment", "speaker": "them", "id": "them-6", "text": "Can you send me something on that? Ideally before the end of next week, because our budget review is on the fourteenth.", "start": 77.52, "end": 85.98, "final": true}
+{"type": "segment", "speaker": "me", "id": "me-6", "text": "Yes, I can do that.", "start": 86.78, "end": 88.71, "final": true}
+{"type": "segment", "speaker": "them", "id": "them-7", "text": "Great. And what would the timeline look like to go live in the third warehouse if we said yes in November?", "start": 89.51, "end": 97.58, "final": true}
+{"type": "segment", "speaker": "me", "id": "me-7", "text": "Let me think about that. It depends on a few things on our side.", "start": 98.38, "end": 103.77, "final": true}
+{"type": "segment", "speaker": "them", "id": "them-8", "text": "Sure. Honestly the main thing for me is whether the accuracy holds up when volumes spike in December.", "start": 104.57, "end": 111.49, "final": true}
+{"type": "segment", "speaker": "me", "id": "me-8", "text": "That's a good point.", "start": 112.29, "end": 113.83, "final": true}
+{"type": "segment", "speaker": "them", "id": "them-9", "text": "Okay, I have a hard stop in a couple minutes. Anything else you need from me?", "start": 114.63, "end": 120.78, "final": true}
+{"type": "segment", "speaker": "me", "id": "me-9", "text": "I think that covers it, I'll follow up by email.", "start": 121.58, "end": 125.43, "final": true}
